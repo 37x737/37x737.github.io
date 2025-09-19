@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>악몽의 학원</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="game-container">
+  <div id="stats-bar">
+    <div id="date">1일차</div>
+    <div id="time">아침</div>
+    <div id="mental">정신력: 100</div>
+  </div>
+
+  <div id="text-container">
+    <div id="textBox"></div>
+  </div>
+
+  <div id="choices-container"></div>
+
+  <div id="save-slots">
+    <button class="save-btn" onclick="handleSaveSlot(1)">슬롯1</button>
+    <button class="save-btn" onclick="handleSaveSlot(2)">슬롯2</button>
+    <button class="save-btn" onclick="handleSaveSlot(3)">슬롯3</button>
+    <button class="save-btn" onclick="openMenu()">메뉴</button>
+  </div>
+</div>
+
+<!-- 메뉴 -->
+<div id="menu-overlay">
+  <div class="menu-box">
+    <h3>상태 메뉴</h3>
+    <div id="menu-stats">
+      <p><b>사오리</b> 호감도 <span id="saoriAffection"></span> / 정신력 <span id="saoriMental"></span></p>
+      <p><b>리에</b> 호감도 <span id="rieAffection"></span> / 정신력 <span id="rieMental"></span></p>
+      <p><b>미사키</b> 호감도 <span id="misakiAffection"></span> / 정신력 <span id="misakiMental"></span></p>
+      <small>*수치는 매일 아침 자동 갱신됩니다.</small>
+    </div>
+    <button onclick="closeMenu()">닫기</button>
+  </div>
+</div>
+
+<!-- 저장 팝업 -->
+<div id="popup-overlay">
+  <div class="menu-box">
+    <p>선택한 슬롯에 대해:</p>
+    <button onclick="saveGame()">저장</button>
+    <button onclick="loadGame()">불러오기</button>
+    <button onclick="deleteGame()">삭제</button>
+    <button onclick="closePopup()">취소</button>
+  </div>
+</div>
+
+<div id="affection-change"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

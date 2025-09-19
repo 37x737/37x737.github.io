@@ -139,12 +139,19 @@ function showAffectionChange(character, change) {
 // 메뉴 토글
 function toggleMenu() {
     const menu = document.getElementById('menuOverlay');
-    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    updateEndingList();
-    // 매일 아침 갱신되는 텍스트 추가
+    const affectionTitle = document.querySelector('.menu-section .menu-title');
+    
     if (menu.style.display === 'block') {
-        const affectionInfo = document.querySelector('.menu-section .menu-title');
-        affectionInfo.innerHTML += '<small>(매일 아침 갱신)</small>';
+        menu.style.display = 'none';
+        if (affectionTitle) {
+            affectionTitle.innerHTML = '호감도';
+        }
+    } else {
+        menu.style.display = 'block';
+        updateEndingList();
+        if (affectionTitle && affectionTitle.textContent.includes('호감도')) {
+            affectionTitle.innerHTML = '호감도 <small>(매일 아침 갱신)</small>';
+        }
     }
 }
 
@@ -181,7 +188,11 @@ function handleSaveSlot(slot) {
         document.getElementById('currentSlot').textContent = slot;
         document.getElementById('savePopup').style.display = 'flex';
     } else {
-        saveGame(slot);
+        // 데이터가 없으면 '저장' 팝업을 띄웁니다.
+        currentSlotNumber = slot;
+        showConfirm('새로운 게임을 저장하시겠습니까?', () => {
+            saveGame(currentSlotNumber);
+        });
     }
 }
 
@@ -194,6 +205,7 @@ function saveGame(slot) {
     slotElement.innerHTML = '✓';
     
     showMessage('게임이 저장되었습니다.');
+    closeSavePopup(); // 저장 후 팝업 닫기
 }
 
 function loadGameConfirm() {
@@ -248,8 +260,8 @@ function closeConfirmPopup() {
 }
 
 function confirmReset() {
-    closeMenu();
-    showConfirm('정말 게임을 초기화하시겠습니까?\n모든 세이브 파일과 해금된 엔딩이 삭제됩니다.', () => {
+    toggleMenu(); // 메뉴를 닫지 않고 바로 확인 팝업을 띄우는 것이 더 자연스러울 수 있어 수정
+    showConfirm('정말 게임을 초기화하시겠습니까?\n모든 세이브 파일과 해금된 엔딩이 삭제됩니다.', ()(() => {
         resetGame();
     });
 }

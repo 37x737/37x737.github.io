@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> </title>
+    <title>악몽</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-container">
         <div class="stats-bar">
-            <div class="day-counter">1일차</div>
-            <div class="time-phase">아침</div>
-            <div class="mental-section">
-                <span>정신력:</span>
-                <div class="mental-bar">
-                    <div class="mental-fill" style="width: 100%"></div>
+            <div class="stats-left">
+                <div class="day-counter">1일차</div>
+                <div class="time-phase">아침</div>
+                <div class="mental-section">
+                    <span>정신력:</span>
+                    <div class="mental-bar">
+                        <div class="mental-fill" style="width: 100%"></div>
+                    </div>
                 </div>
             </div>
             <span class="menu-text" onclick="toggleMenu()">메뉴</span>
@@ -26,8 +28,7 @@
             </div>
         </div>
       
-        <div class="choices-container" id="choicesContainer">
-            </div>
+        <div class="choices-container" id="choicesContainer"></div>
       
         <div class="save-slots">
             <div class="save-slot" onclick="handleSaveSlot(1)">1</div>
@@ -38,7 +39,7 @@
         <div class="menu-overlay" id="menuOverlay">
             <div class="menu-content">
                 <div class="menu-section">
-                    <div class="menu-title">호감도</div>
+                    <div class="menu-title">호감도 <small>(매일 아침 갱신)</small></div>
                     <div class="affection-display">
                         <span>사오리:</span>
                         <span id="saoriAffection">0</span>
@@ -75,8 +76,7 @@
                 
                 <div class="menu-section">
                     <div class="menu-title">해금된 엔딩</div>
-                    <div class="ending-list" id="endingList">
-                        </div>
+                    <div class="ending-list" id="endingList"></div>
                 </div>
                 
                 <button class="close-btn" onclick="toggleMenu()">닫기</button>

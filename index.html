@@ -1,60 +1,116 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>악몽의 학원</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> </title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="game-container">
-  <div id="stats-bar">
-    <div id="date">1일차</div>
-    <div id="time">아침</div>
-    <div id="mental">정신력: 100</div>
-  </div>
-
-  <div id="text-container">
-    <div id="textBox"></div>
-  </div>
-
-  <div id="choices-container"></div>
-
-  <div id="save-slots">
-    <button class="save-btn" onclick="handleSaveSlot(1)">슬롯1</button>
-    <button class="save-btn" onclick="handleSaveSlot(2)">슬롯2</button>
-    <button class="save-btn" onclick="handleSaveSlot(3)">슬롯3</button>
-    <button class="save-btn" onclick="openMenu()">메뉴</button>
-  </div>
-</div>
-
-<!-- 메뉴 -->
-<div id="menu-overlay">
-  <div class="menu-box">
-    <h3>상태 메뉴</h3>
-    <div id="menu-stats">
-      <p><b>사오리</b> 호감도 <span id="saoriAffection"></span> / 정신력 <span id="saoriMental"></span></p>
-      <p><b>리에</b> 호감도 <span id="rieAffection"></span> / 정신력 <span id="rieMental"></span></p>
-      <p><b>미사키</b> 호감도 <span id="misakiAffection"></span> / 정신력 <span id="misakiMental"></span></p>
-      <small>*수치는 매일 아침 자동 갱신됩니다.</small>
+    <div class="game-container">
+        <div class="stats-bar">
+            <div class="day-counter">1일차</div>
+            <div class="time-phase">아침</div>
+            <div class="mental-section">
+                <span>정신력:</span>
+                <div class="mental-bar">
+                    <div class="mental-fill" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="menu-btn" onclick="toggleMenu()">메뉴</div>
+      
+        <div class="text-container">
+            <div class="text-box" id="textBox" onclick="nextText()">
+                여기를 클릭하여 시작하세요...
+            </div>
+        </div>
+      
+        <div class="choices-container" id="choicesContainer">
+            </div>
+      
+        <div class="save-slots">
+            <div class="save-slot" onclick="handleSaveSlot(1)">1</div>
+            <div class="save-slot" onclick="handleSaveSlot(2)">2</div>
+            <div class="save-slot" onclick="handleSaveSlot(3)">3</div>
+        </div>
+      
+        <div class="menu-overlay" id="menuOverlay">
+            <div class="menu-content">
+                <div class="menu-section">
+                    <div class="menu-title">호감도</div>
+                    <div class="affection-display">
+                        <span>사오리:</span>
+                        <span id="saoriAffection">0</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>리에:</span>
+                        <span id="rieAffection">0</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>미사키:</span>
+                        <span id="misakiAffection">0</span>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-title">정신력</div>
+                    <div class="affection-display">
+                        <span>히로키:</span>
+                        <span id="playerMental">100</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>사오리:</span>
+                        <span id="saoriMental">100</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>리에:</span>
+                        <span id="rieMental">100</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>미사키:</span>
+                        <span id="misakiMental">100</span>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-title">해금된 엔딩</div>
+                    <div class="ending-list" id="endingList">
+                        </div>
+                </div>
+                
+                <button class="close-btn" onclick="toggleMenu()">닫기</button>
+                <button class="reset-btn" onclick="confirmReset()">게임 초기화</button>
+            </div>
+        </div>
+      
+        <div class="popup-overlay" id="savePopup">
+            <div class="popup-content">
+                <div class="popup-title">세이브 슬롯 <span id="currentSlot">1</span></div>
+                <div class="popup-buttons">
+                    <button class="popup-btn primary" onclick="loadGameConfirm()">불러오기</button>
+                    <button class="popup-btn danger" onclick="deleteGameConfirm()">삭제</button>
+                    <button class="popup-btn secondary" onclick="closeSavePopup()">취소</button>
+                </div>
+            </div>
+        </div>
+      
+        <div class="confirm-overlay" id="confirmPopup">
+            <div class="confirm-content">
+                <div class="popup-title" id="confirmTitle">확인</div>
+                <div id="confirmMessage">정말 실행하시겠습니까?</div>
+                <div class="popup-buttons">
+                    <button class="popup-btn primary" id="confirmYes">예</button>
+                    <button class="popup-btn secondary" onclick="closeConfirmPopup()">아니오</button>
+                </div>
+            </div>
+        </div>
+      
+        <div class="affection-change" id="affectionChange">
+            <div id="affectionChangeText"></div>
+        </div>
     </div>
-    <button onclick="closeMenu()">닫기</button>
-  </div>
-</div>
-
-<!-- 저장 팝업 -->
-<div id="popup-overlay">
-  <div class="menu-box">
-    <p>선택한 슬롯에 대해:</p>
-    <button onclick="saveGame()">저장</button>
-    <button onclick="loadGame()">불러오기</button>
-    <button onclick="deleteGame()">삭제</button>
-    <button onclick="closePopup()">취소</button>
-  </div>
-</div>
-
-<div id="affection-change"></div>
-
-<script src="script.js"></script>
+    
+    <script src="script.js"></script>
 </body>
 </html>

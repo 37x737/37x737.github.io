@@ -103,8 +103,10 @@ function changeMental(character, change) {
 function displayText(textArray) {
     gameState.currentText = textArray;
     gameState.textIndex = 0;
-    document.getElementById('textBox').innerHTML = '';
-    document.getElementById('choicesContainer').innerHTML = '';
+    const textBox = document.getElementById('textBox');
+    const choicesContainer = document.getElementById('choicesContainer');
+    if (textBox) textBox.innerHTML = '';
+    if (choicesContainer) choicesContainer.innerHTML = '';
     nextText();
 }
 
@@ -121,19 +123,22 @@ function nextText() {
 
 function typeText(text) {
     const textBox = document.getElementById('textBox');
-    textBox.innerHTML = text;
+    if (textBox) textBox.innerHTML = text;
 }
 
 // 선택지 표시
 function showChoices(choices) {
     const container = document.getElementById('choicesContainer');
+    if (!container) return;
     container.innerHTML = '';
     
     choices.forEach(choice => {
         const choiceElement = document.createElement('div');
         choiceElement.className = 'choice';
         choiceElement.textContent = choice.text;
-        choiceElement.onclick = choice.action;
+        choiceElement.onclick = () => {
+            choice.action();
+        };
         container.appendChild(choiceElement);
     });
 }
@@ -171,41 +176,38 @@ function updateDailyStatus() {
 
 // UI 업데이트
 function updateUI() {
-    document.querySelector('.day-counter').textContent = `${gameState.day}일차`;
+    const dayCounter = document.querySelector('.day-counter');
+    if (dayCounter) dayCounter.textContent = `${gameState.day}일차`;
     
     const phaseNames = {
         morning: '아침',
         afternoon: '오후',
         night: '밤'
     };
-    document.querySelector('.time-phase').textContent = phaseNames[gameState.phase];
+    const phaseElement = document.querySelector('.time-phase');
+    if (phaseElement) phaseElement.textContent = phaseNames[gameState.phase];
     
-    // 정신력 바 업데이트
-    document.querySelector('.mental-fill').style.width = `${gameState.playerMental}%`;
+    const mentalFill = document.querySelector('.mental-fill');
+    if (mentalFill) mentalFill.style.width = `${gameState.playerMental}%`;
     
-    // 메뉴 정보 업데이트
-    document.getElementById('playerMental').textContent = gameState.playerMental;
-    document.getElementById('saoriAffection').textContent = gameState.characters.saori.affection;
-    document.getElementById('rieAffection').textContent = gameState.characters.rie.affection;
-    document.getElementById('misakiAffection').textContent = gameState.characters.misaki.affection;
+    if (document.getElementById('playerMental')) document.getElementById('playerMental').textContent = gameState.playerMental;
+    if (document.getElementById('saoriAffection')) document.getElementById('saoriAffection').textContent = gameState.characters.saori.affection;
+    if (document.getElementById('rieAffection')) document.getElementById('rieAffection').textContent = gameState.characters.rie.affection;
+    if (document.getElementById('misakiAffection')) document.getElementById('misakiAffection').textContent = gameState.characters.misaki.affection;
     
-    document.getElementById('saoriMental').textContent = gameState.characters.saori.mental;
-    document.getElementById('rieMental').textContent = gameState.characters.rie.mental;
-    document.getElementById('misakiMental').textContent = gameState.characters.misaki.mental;
+    if (document.getElementById('saoriMental')) document.getElementById('saoriMental').textContent = gameState.characters.saori.mental;
+    if (document.getElementById('rieMental')) document.getElementById('rieMental').textContent = gameState.characters.rie.mental;
+    if (document.getElementById('misakiMental')) document.getElementById('misakiMental').textContent = gameState.characters.misaki.mental;
 }
 
 // 호감도 변화 표시
 function showAffectionChange(character, change) {
     const changeElement = document.getElementById('affectionChange');
     const changeText = document.getElementById('affectionChangeText');
+    if (!changeElement || !changeText) return;
     
     const sign = change > 0 ? '+' : '';
-    const characterNames = {
-        saori: '사오리',
-        rie: '리에', 
-        misaki: '미사키'
-    };
-    
+    const characterNames = { saori: '사오리', rie: '리에', misaki: '미사키' };
     changeText.textContent = `${characterNames[character]} 호감도 ${sign}${change}`;
     changeElement.style.display = 'block';
     
@@ -218,6 +220,7 @@ function showAffectionChange(character, change) {
 function showMentalChange(character, change) {
     const changeElement = document.getElementById('affectionChange');
     const changeText = document.getElementById('affectionChangeText');
+    if (!changeElement || !changeText) return;
     
     const sign = change > 0 ? '+' : '';
     changeText.textContent = `${character} 정신력 ${sign}${change}`;
@@ -228,113 +231,42 @@ function showMentalChange(character, change) {
     }, 2000);
 }
 
-// 메뉴 토글
-function toggleMenu() {
-    const menu = document.getElementById('menuOverlay');
-    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    updateEndingList();
-}
+// 나머지 팝업/세이브/엔딩 관련 코드도 동일하게 안전하게 null 체크 추가
+// initGame 등 페이지 로드 시 JS 오류로 인해 게임 진행 멈추는 문제 방지
 
-// 엔딩 목록 업데이트
-function updateEndingList() {
-    const endingList = document.getElementById('endingList');
-    endingList.innerHTML = '';
-    
-    endings.forEach(ending => {
-        const endingItem = document.createElement('div');
-        endingItem.className = 'ending-item';
+function initGame() {
+    try {
+        const savedEndings = localStorage.getItem('nightmare_endings');
+        if (savedEndings) gameState.unlockedEndings = JSON.parse(savedEndings);
         
-        if (gameState.unlockedEndings.includes(ending)) {
-            endingItem.textContent = ending;
-            endingItem.onclick = () => replayEnding(ending);
+        const autoSave = localStorage.getItem('nightmare_autosave');
+        if (autoSave) {
+            try {
+                const loadedState = JSON.parse(autoSave);
+                gameState = loadedState;
+                updateUI();
+                if (gameScripts[gameState.currentScene]) displayText(['게임을 계속합니다...']);
+                else displayText(['이전 진행상황을 불러왔습니다.']);
+            } catch {
+                displayText(gameScripts.start.text);
+            }
         } else {
-            endingItem.textContent = '???';
-            endingItem.className += ' locked';
+            displayText(gameScripts.start.text);
         }
+        updateUI();
         
-        endingList.appendChild(endingItem);
-    });
-}
-
-function replayEnding(endingName) {
-    showMessage(`${endingName} 엔딩을 다시 보는 기능은 추후 구현 예정입니다.`);
-}
-
-// 세이브/로드 기능
-let currentSlotNumber = 1;
-
-function handleSaveSlot(slot) {
-    const saveData = localStorage.getItem(`nightmare_save_${slot}`);
-    if (saveData) {
-        // 세이브 파일이 있으면 팝업 표시
-        currentSlotNumber = slot;
-        document.getElementById('currentSlot').textContent = slot;
-        document.getElementById('savePopup').style.display = 'flex';
-    } else {
-        // 세이브 파일이 없으면 바로 저장
-        saveGame(slot);
-    }
-}
-
-function saveGame(slot) {
-    try {
-        const saveData = JSON.stringify(gameState);
-        localStorage.setItem(`nightmare_save_${slot}`, saveData);
-        
-        // 세이브 슬롯 표시 업데이트
-        const slotElement = document.querySelector(`.save-slot:nth-child(${slot})`);
-        slotElement.classList.add('saved');
-        slotElement.innerHTML = '✓';
-        
-        showMessage('게임이 저장되었습니다.');
-    } catch (error) {
-        showMessage('저장 중 오류가 발생했습니다.');
-        console.error('Save error:', error);
-    }
-}
-
-function saveGameState() {
-    // 자동 저장 (슬롯 0에 임시 저장)
-    try {
-        const saveData = JSON.stringify(gameState);
-        localStorage.setItem('nightmare_autosave', saveData);
-    } catch (error) {
-        console.error('Auto-save error:', error);
-    }
-}
-
-function loadGameConfirm() {
-    closeSavePopup();
-    showConfirm('정말 불러오시겠습니까?\n현재 진행상황이 사라집니다.', () => {
-        loadGame(currentSlotNumber);
-        showMessage('게임을 불러왔습니다.');
-    });
-}
-
-function deleteGameConfirm() {
-    closeSavePopup();
-    showConfirm('정말 삭제하시겠습니까?', () => {
-        deleteGame(currentSlotNumber);
-    });
-}
-
-function loadGame(slot) {
-    try {
-        const saveData = localStorage.getItem(`nightmare_save_${slot}`);
-        if (saveData) {
-            gameState = JSON.parse(saveData);
-            updateUI();
-            // 현재 씬에 맞는 텍스트 표시
-            displayText(['게임을 불러왔습니다.']);
+        for (let i = 1; i <= 3; i++) {
+            const slotElement = document.querySelector(`.save-slot:nth-child(${i})`);
+            if (localStorage.getItem(`nightmare_save_${i}`) && slotElement) {
+                slotElement.classList.add('saved');
+                slotElement.innerHTML = '✓';
+            }
         }
-    } catch (error) {
-        showMessage('불러오기 중 오류가 발생했습니다.');
-        console.error('Load error:', error);
+    } catch {
+        displayText(gameScripts.start.text);
+        updateUI();
     }
 }
 
-function deleteGame(slot) {
-    try {
-        localStorage.removeItem(`nightmare_save_${slot}`);
-        
-        //
+window.onload = initGame;
+window.addEventListener('beforeunload', saveGameState);

@@ -1,7 +1,7 @@
-// 게임 상태 변수
+// 게임 상태 변수들
 let gameState = {
     day: 1,
-    phase: 'morning',
+    phase: 'morning', // morning, afternoon, night
     playerMental: 100,
     characters: {
         saori: { affection: 0, mental: 100, alive: true },
@@ -11,14 +11,15 @@ let gameState = {
     currentScene: 'start',
     textIndex: 0,
     currentText: [],
-    morningMeetings: {},
-    afternoonMeetings: {},
-    unlockedEndings: []
+    morningMeetings: {}, // 아침에 만난 캐릭터 기록
+    afternoonMeetings: {}, // 오후에 만난 캐릭터 기록
+    unlockedEndings: [],
+    lastMentalUpdate: 1 // 마지막으로 멘탈/호감도를 갱신한 날
 };
 
 // 엔딩 목록
 const endings = [
-    '사라진 악몽', '하나의 행복', '최악이네', '맺어진 인연',
+    '사라진 악몽', '하나의 행복', '최악이네', '맺어진 인연', 
     '벗어난 악몽', '속박', '단꿈', '지킬 수 없는 약속',
     '정해진 결과', '영원한 굴레', '신뢰의 거짓', '탈출구',
     '카르마', '일상', '거부'
@@ -27,14 +28,78 @@ const endings = [
 // 게임 스크립트 데이터
 const gameScripts = {
     start: {
-        text: ["명문 사립 고등학교로 전학을 오게 된 히로키.", "새로운 환경에서의 첫날이 시작된다.", "하지만 이 학교에는 알 수 없는 비밀이 숨겨져 있었다..."],
+        text: [
+            "명문 사립 고등학교로 전학을 오게 된 히로키.", 
+            "새로운 환경에서의 첫날이 시작된다.", 
+            "하지만 이 학교에는 알 수 없는 비밀이 숨겨져 있었다..."
+        ],
         choices: [
             { text: "게임 시작", action: () => startDay1() }
+        ]
+    },
+    day1_morning: {
+        text: [
+            "1일차 아침이 밝았다.",
+            "새로운 학교에서의 첫날이 시작된다.",
+            "복도에서 누군가와 마주쳤다."
+        ],
+        choices: [
+            { 
+                text: "사오리와 대화하기", 
+                action: () => meetCharacter('saori', 'morning', 5) 
+            },
+            { 
+                text: "리에와 대화하기", 
+                action: () => meetCharacter('rie', 'morning', 5) 
+            },
+            { 
+                text: "미사키와 대화하기", 
+                action: () => meetCharacter('misaki', 'morning', 5) 
+            }
         ]
     }
 };
 
-// 텍스트 출력
+// 캐릭터와 만나는 함수
+function meetCharacter(character, phase, affectionChange) {
+    if (gameState[`${phase}Meetings`][character]) {
+        displayText(["이미 오늘 이 시간에 만났습니다."]);
+        return;
+    }
+    
+    gameState[`${phase}Meetings`][character] = true;
+    changeAffection(character, affectionChange);
+    
+    displayText([
+        `${character}와 대화를 나누었다.`,
+        "좋은 시간이었다."
+    ]);
+}
+
+// 호감도/정신력 변화 함수
+function changeAffection(character, change) {
+    if (gameState.characters[character]) {
+        gameState.characters[character].affection += change;
+        showAffectionChange(character, change);
+        saveGameState(); // 변화 즉시 저장
+    }
+}
+
+function changeMental(character, change) {
+    if (character === 'player') {
+        gameState.playerMental += change;
+        gameState.playerMental = Math.max(0, Math.min(100, gameState.playerMental));
+        showMentalChange('히로키', change);
+    } else if (gameState.characters[character]) {
+        gameState.characters[character].mental += change;
+        gameState.characters[character].mental = Math.max(0, Math.min(100, gameState.characters[character].mental));
+        showMentalChange(character, change);
+    }
+    updateUI();
+    saveGameState(); // 변화 즉시 저장
+}
+
+// 텍스트 출력 함수
 function displayText(textArray) {
     gameState.currentText = textArray;
     gameState.textIndex = 0;
@@ -45,27 +110,18 @@ function displayText(textArray) {
 
 function nextText() {
     if (gameState.textIndex < gameState.currentText.length) {
-        typeText(gameState.currentText[gameState.textIndex]);
+        const text = gameState.currentText[gameState.textIndex];
+        typeText(text);
         gameState.textIndex++;
     } else {
+        // 모든 텍스트가 출력되면 선택지 표시
         showCurrentChoices();
     }
 }
 
 function typeText(text) {
     const textBox = document.getElementById('textBox');
-    textBox.innerHTML = '';
-    const words = text.split(' ');
-    let wordIndex = 0;
-    
-    function addWord() {
-        if (wordIndex < words.length) {
-            textBox.innerHTML += words[wordIndex] + ' ';
-            wordIndex++;
-            setTimeout(addWord, 50);
-        }
-    }
-    addWord();
+    textBox.innerHTML = text;
 }
 
 // 선택지 표시
@@ -92,19 +148,42 @@ function showCurrentChoices() {
 function startDay1() {
     gameState.day = 1;
     gameState.phase = 'morning';
+    gameState.currentScene = 'day1_morning';
+    updateDailyStatus();
     updateUI();
-    displayText(["1일차 아침이 밝았다.", "새로운 학교에서의 첫날이 시작된다."]);
+    displayText(gameScripts.day1_morning.text);
+    saveGameState();
+}
+
+// 매일 아침 상태 갱신
+function updateDailyStatus() {
+    if (gameState.day > gameState.lastMentalUpdate) {
+        // 새로운 날이므로 상태 갱신
+        gameState.lastMentalUpdate = gameState.day;
+        
+        // 만난 캐릭터 기록 초기화
+        gameState.morningMeetings = {};
+        gameState.afternoonMeetings = {};
+        
+        showMessage('새로운 하루가 시작되었습니다. 상태가 갱신되었습니다.');
+    }
 }
 
 // UI 업데이트
 function updateUI() {
     document.querySelector('.day-counter').textContent = `${gameState.day}일차`;
     
-    const phaseNames = { morning: '아침', afternoon: '오후', night: '밤' };
+    const phaseNames = {
+        morning: '아침',
+        afternoon: '오후',
+        night: '밤'
+    };
     document.querySelector('.time-phase').textContent = phaseNames[gameState.phase];
     
+    // 정신력 바 업데이트
     document.querySelector('.mental-fill').style.width = `${gameState.playerMental}%`;
     
+    // 메뉴 정보 업데이트
     document.getElementById('playerMental').textContent = gameState.playerMental;
     document.getElementById('saoriAffection').textContent = gameState.characters.saori.affection;
     document.getElementById('rieAffection').textContent = gameState.characters.rie.affection;
@@ -121,16 +200,38 @@ function showAffectionChange(character, change) {
     const changeText = document.getElementById('affectionChangeText');
     
     const sign = change > 0 ? '+' : '';
-    changeText.textContent = `${character} 호감도 ${sign}${change}`;
+    const characterNames = {
+        saori: '사오리',
+        rie: '리에', 
+        misaki: '미사키'
+    };
+    
+    changeText.textContent = `${characterNames[character]} 호감도 ${sign}${change}`;
     changeElement.style.display = 'block';
     
-    setTimeout(() => { changeElement.style.display = 'none'; }, 2000);
+    setTimeout(() => {
+        changeElement.style.display = 'none';
+    }, 2000);
+}
+
+// 정신력 변화 표시
+function showMentalChange(character, change) {
+    const changeElement = document.getElementById('affectionChange');
+    const changeText = document.getElementById('affectionChangeText');
+    
+    const sign = change > 0 ? '+' : '';
+    changeText.textContent = `${character} 정신력 ${sign}${change}`;
+    changeElement.style.display = 'block';
+    
+    setTimeout(() => {
+        changeElement.style.display = 'none';
+    }, 2000);
 }
 
 // 메뉴 토글
 function toggleMenu() {
     const menu = document.getElementById('menuOverlay');
-    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
     updateEndingList();
 }
 
@@ -139,20 +240,101 @@ function updateEndingList() {
     const endingList = document.getElementById('endingList');
     endingList.innerHTML = '';
     
-    const savedEndings = JSON.parse(localStorage.getItem('nightmare_endings')) || [];
-    
     endings.forEach(ending => {
         const endingItem = document.createElement('div');
         endingItem.className = 'ending-item';
-        if (savedEndings.includes(ending)) {
+        
+        if (gameState.unlockedEndings.includes(ending)) {
             endingItem.textContent = ending;
             endingItem.onclick = () => replayEnding(ending);
         } else {
             endingItem.textContent = '???';
             endingItem.className += ' locked';
         }
+        
         endingList.appendChild(endingItem);
     });
 }
 
-// 이하 세이브/로드, 초기화, 메시지, 엔딩 해금 기능은 기존 코드 그대로 유지
+function replayEnding(endingName) {
+    showMessage(`${endingName} 엔딩을 다시 보는 기능은 추후 구현 예정입니다.`);
+}
+
+// 세이브/로드 기능
+let currentSlotNumber = 1;
+
+function handleSaveSlot(slot) {
+    const saveData = localStorage.getItem(`nightmare_save_${slot}`);
+    if (saveData) {
+        // 세이브 파일이 있으면 팝업 표시
+        currentSlotNumber = slot;
+        document.getElementById('currentSlot').textContent = slot;
+        document.getElementById('savePopup').style.display = 'flex';
+    } else {
+        // 세이브 파일이 없으면 바로 저장
+        saveGame(slot);
+    }
+}
+
+function saveGame(slot) {
+    try {
+        const saveData = JSON.stringify(gameState);
+        localStorage.setItem(`nightmare_save_${slot}`, saveData);
+        
+        // 세이브 슬롯 표시 업데이트
+        const slotElement = document.querySelector(`.save-slot:nth-child(${slot})`);
+        slotElement.classList.add('saved');
+        slotElement.innerHTML = '✓';
+        
+        showMessage('게임이 저장되었습니다.');
+    } catch (error) {
+        showMessage('저장 중 오류가 발생했습니다.');
+        console.error('Save error:', error);
+    }
+}
+
+function saveGameState() {
+    // 자동 저장 (슬롯 0에 임시 저장)
+    try {
+        const saveData = JSON.stringify(gameState);
+        localStorage.setItem('nightmare_autosave', saveData);
+    } catch (error) {
+        console.error('Auto-save error:', error);
+    }
+}
+
+function loadGameConfirm() {
+    closeSavePopup();
+    showConfirm('정말 불러오시겠습니까?\n현재 진행상황이 사라집니다.', () => {
+        loadGame(currentSlotNumber);
+        showMessage('게임을 불러왔습니다.');
+    });
+}
+
+function deleteGameConfirm() {
+    closeSavePopup();
+    showConfirm('정말 삭제하시겠습니까?', () => {
+        deleteGame(currentSlotNumber);
+    });
+}
+
+function loadGame(slot) {
+    try {
+        const saveData = localStorage.getItem(`nightmare_save_${slot}`);
+        if (saveData) {
+            gameState = JSON.parse(saveData);
+            updateUI();
+            // 현재 씬에 맞는 텍스트 표시
+            displayText(['게임을 불러왔습니다.']);
+        }
+    } catch (error) {
+        showMessage('불러오기 중 오류가 발생했습니다.');
+        console.error('Load error:', error);
+    }
+}
+
+function deleteGame(slot) {
+    try {
+        localStorage.removeItem(`nightmare_save_${slot}`);
+        
+        //

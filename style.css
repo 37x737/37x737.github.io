@@ -36,10 +36,12 @@ body {
     font-size: 16px;
     line-height: 1.6;
     cursor: pointer;
+    z-index: 1;
 }
 
 .choices-container {
     padding: 0 20px;
+    z-index: 1;
 }
 
 .choice {
@@ -79,13 +81,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    z-index: 100;
+    z-index: 1000; /* z-index 상향 */
     font-size: 14px;
-}
-
-.stats-left {
-    display: flex;
-    align-items: center;
 }
 
 .mental-section {
@@ -116,6 +113,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    z-index: 1000; /* 버튼이 위에 표시되도록 */
 }
 
 .save-slot {
@@ -141,19 +139,20 @@ body {
     color: #4a9eff;
 }
 
-.popup-overlay {
+.popup-overlay, .confirm-overlay, .menu-overlay, .affection-change {
+    display: none; /* 기본 숨김 유지 */
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 2000;
-    display: none;
     align-items: center;
     justify-content: center;
+    z-index: 2000; /* 메뉴/팝업이 항상 위에 표시되도록 */
+}
+
+.popup-overlay {
+    background: rgba(0, 0, 0, 0.8);
 }
 
 .popup-content {
@@ -165,70 +164,6 @@ body {
     text-align: center;
 }
 
-.popup-title {
-    font-size: 16px;
-    margin-bottom: 15px;
-    color: #4a9eff;
-}
-
-.popup-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 15px;
-}
-
-.popup-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 0.3s ease;
-}
-
-.popup-btn.primary {
-    background: #4a9eff;
-    color: white;
-}
-
-.popup-btn.primary:hover {
-    background: #357abd;
-}
-
-.popup-btn.secondary {
-    background: #666;
-    color: white;
-}
-
-.popup-btn.secondary:hover {
-    background: #555;
-}
-
-.popup-btn.danger {
-    background: #ff4444;
-    color: white;
-}
-
-.popup-btn.danger:hover {
-    background: #cc3333;
-}
-
-.confirm-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 3000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-}
-
 .confirm-content {
     background: #404040;
     border: 2px solid #ff4444;
@@ -238,47 +173,11 @@ body {
     text-align: center;
 }
 
-.reset-btn {
-    background: #ff4444;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 12px;
-    margin-top: 10px;
-}
-
-.reset-btn:hover {
-    background: #cc3333;
-}
-
-.menu-btn {
-    color: #eee;
-    cursor: pointer;
-    font-size: 14px;
-    padding: 5px 10px;
-    border-radius: 3px;
-    transition: background 0.3s ease;
-}
-
-.menu-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
 .menu-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
     background: rgba(0, 0, 0, 0.9);
-    z-index: 1000;
-    display: none;
     padding: 20px;
     overflow-y: auto;
+    z-index: 1500;
 }
 
 .menu-content {
@@ -289,120 +188,15 @@ body {
     margin: 50px auto;
 }
 
-.menu-section {
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #333;
-}
-
-.menu-section:last-child {
-    border-bottom: none;
-}
-
-.menu-title {
-    font-size: 18px;
-    margin-bottom: 10px;
-    color: #4a9eff;
-}
-
-.status-note {
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 10px;
-    font-style: italic;
-}
-
-.affection-display {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    font-size: 14px;
-}
-
-.day-counter {
-    font-size: 18px;
-    font-weight: bold;
-    color: #4a9eff;
-}
-
-.time-phase {
-    font-size: 16px;
-    color: #ffaa44;
-    margin-left: 10px;
-}
-
-.ending-list {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.ending-item {
-    padding: 5px 10px;
-    margin: 5px 0;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-.ending-item:hover {
-    background: rgba(0, 0, 0, 0.8);
-}
-
-.ending-item.locked {
-    color: #666;
-    cursor: default;
-}
-
-.ending-item.locked:hover {
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.close-btn {
-    background: #ff4444;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    float: right;
-    margin-top: 20px;
-}
-
 .affection-change {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.9);
     border: 2px solid #4a9eff;
     border-radius: 10px;
     padding: 20px;
-    z-index: 1500;
+    z-index: 2500; /* 가장 위에 표시 */
     display: none;
     text-align: center;
     font-size: 16px;
     font-weight: bold;
     min-width: 200px;
-}
-
-@media (max-width: 480px) {
-    .text-box {
-        font-size: 14px;
-        padding: 15px;
-    }
-    
-    .choice {
-        font-size: 14px;
-        padding: 12px;
-    }
-    
-    .stats-bar {
-        font-size: 12px;
-        padding: 8px 15px;
-    }
-    
-    .menu-btn {
-        font-size: 12px;
-    }
 }

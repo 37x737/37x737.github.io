@@ -8,38 +8,44 @@
 </head>
 <body>
     <div class="game-container">
+        <!-- 상단 스탯바 -->
         <div class="stats-bar">
-            <div class="stats-left">
-                <div class="day-counter">1일차</div>
-                <div class="time-phase">아침</div>
-                <div class="mental-section">
-                    <span>정신력:</span>
-                    <div class="mental-bar">
-                        <div class="mental-fill" style="width: 100%"></div>
-                    </div>
+            <div class="day-counter">1일차</div>
+            <div class="time-phase">아침</div>
+            <div class="mental-section">
+                <span>정신력:</span>
+                <div class="mental-bar">
+                    <div class="mental-fill" style="width: 100%"></div>
                 </div>
             </div>
-            <span class="menu-text" onclick="toggleMenu()">메뉴</span>
+            <div class="menu-btn" onclick="toggleMenu()">메뉴</div>
         </div>
-      
+        
+        <!-- 텍스트 영역 -->
         <div class="text-container">
             <div class="text-box" id="textBox" onclick="nextText()">
                 여기를 클릭하여 시작하세요...
             </div>
         </div>
-      
-        <div class="choices-container" id="choicesContainer"></div>
-      
+        
+        <!-- 선택지 영역 -->
+        <div class="choices-container" id="choicesContainer">
+            <!-- 선택지들이 여기에 동적으로 추가됩니다 -->
+        </div>
+        
+        <!-- 세이브 슬롯 -->
         <div class="save-slots">
             <div class="save-slot" onclick="handleSaveSlot(1)">1</div>
             <div class="save-slot" onclick="handleSaveSlot(2)">2</div>
             <div class="save-slot" onclick="handleSaveSlot(3)">3</div>
         </div>
-      
+        
+        <!-- 메뉴 오버레이 -->
         <div class="menu-overlay" id="menuOverlay">
             <div class="menu-content">
                 <div class="menu-section">
-                    <div class="menu-title">호감도 <small>(매일 아침 갱신)</small></div>
+                    <div class="menu-title">호감도</div>
+                    <div class="status-note">* 매일 아침에 갱신됨</div>
                     <div class="affection-display">
                         <span>사오리:</span>
                         <span id="saoriAffection">0</span>
@@ -55,7 +61,8 @@
                 </div>
                 
                 <div class="menu-section">
-                    <div class="menu-title">정신력</div>
+                    <div class="menu-title">정신력 상태</div>
+                    <div class="status-note">* 매일 아침에 갱신됨</div>
                     <div class="affection-display">
                         <span>히로키:</span>
                         <span id="playerMental">100</span>
@@ -76,14 +83,17 @@
                 
                 <div class="menu-section">
                     <div class="menu-title">해금된 엔딩</div>
-                    <div class="ending-list" id="endingList"></div>
+                    <div class="ending-list" id="endingList">
+                        <!-- 엔딩 목록이 여기에 표시됩니다 -->
+                    </div>
                 </div>
                 
                 <button class="close-btn" onclick="toggleMenu()">닫기</button>
                 <button class="reset-btn" onclick="confirmReset()">게임 초기화</button>
             </div>
         </div>
-      
+        
+        <!-- 세이브 슬롯 팝업 -->
         <div class="popup-overlay" id="savePopup">
             <div class="popup-content">
                 <div class="popup-title">세이브 슬롯 <span id="currentSlot">1</span></div>
@@ -94,7 +104,8 @@
                 </div>
             </div>
         </div>
-      
+        
+        <!-- 확인 팝업 -->
         <div class="confirm-overlay" id="confirmPopup">
             <div class="confirm-content">
                 <div class="popup-title" id="confirmTitle">확인</div>
@@ -105,12 +116,13 @@
                 </div>
             </div>
         </div>
-      
+        
+        <!-- 호감도/정신력 변화 알림 -->
         <div class="affection-change" id="affectionChange">
             <div id="affectionChangeText"></div>
         </div>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>

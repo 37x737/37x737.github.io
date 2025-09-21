@@ -60,6 +60,36 @@ const gameScripts = {
     }
 };
 
+// localStorage 대체 시스템
+let saveData = {};
+
+function setStorage(key, value) {
+    try {
+        localStorage.setItem(key, value);
+        saveData[key] = value;
+    } catch (e) {
+        saveData[key] = value;
+        console.warn('localStorage 사용 불가, 메모리에 저장:', e);
+    }
+}
+
+function getStorage(key) {
+    try {
+        return localStorage.getItem(key) || saveData[key] || null;
+    } catch (e) {
+        return saveData[key] || null;
+    }
+}
+
+function removeStorage(key) {
+    try {
+        localStorage.removeItem(key);
+        delete saveData[key];
+    } catch (e) {
+        delete saveData[key];
+    }
+}
+
 // 캐릭터와 만나는 함수
 function meetCharacter(character, phase, affectionChange) {
     const meetingKey = `${phase}Meetings`;
@@ -89,6 +119,7 @@ function changeAffection(character, change) {
         gameState.characters[character].affection += change;
         showAffectionChange(character, change);
         saveGameState(); // 변화 즉시 저장
+        updateUI(); // UI 즉시 업데이트
     }
 }
 
@@ -271,8 +302,8 @@ function replayEnding(endingName) {
 let currentSlotNumber = 1;
 
 function handleSaveSlot(slot) {
-    const saveData = localStorage.getItem(`nightmare_save_${slot}`);
-    if (saveData) {
+    const savedData = getStorage(`nightmare_save_${slot}`);
+    if (savedData) {
         // 세이브 파일이 있으면 팝업 표시
         currentSlotNumber = slot;
         document.getElementById('currentSlot').textContent = slot;
@@ -285,15 +316,21 @@ function handleSaveSlot(slot) {
 
 function saveGame(slot) {
     try {
-        const saveData = JSON.stringify(gameState);
-        localStorage.setItem(`nightmare_save_${slot}`, saveData);
+        const saveDataStr = JSON.stringify(gameState);
+        setStorage(`nightmare_save_${slot}`, saveDataStr);
 
-        // 세이브 슬롯 표시 업데이트
-        const slotElement = document.querySelector(`.save-slot:nth-child(${slot})`);
-        slotElement.classList.add('saved');
-        slotElement.innerHTML = '✓';
+        // 저장 확인
+        const checkData = getStorage(`nightmare_save_${slot}`);
+        if (checkData === saveDataStr) {
+            // 세이브 슬롯 표시 업데이트
+            const slotElement = document.querySelector(`.save-slot:nth-child(${slot})`);
+            slotElement.classList.add('saved');
+            slotElement.innerHTML = '✓';
 
-        showMessage('게임이 저장되었습니다.');
+            showMessage('게임이 저장되었습니다.');
+        } else {
+            throw new Error('저장 데이터 확인 실패');
+        }
     } catch (error) {
         showMessage('저장 중 오류가 발생했습니다.');
         console.error('Save error:', error);
@@ -301,10 +338,10 @@ function saveGame(slot) {
 }
 
 function saveGameState() {
-    // 자동 저장 (슬롯 0에 임시 저장)
+    // 자동 저장
     try {
-        const saveData = JSON.stringify(gameState);
-        localStorage.setItem('nightmare_autosave', saveData);
+        const saveDataStr = JSON.stringify(gameState);
+        setStorage('nightmare_autosave', saveDataStr);
     } catch (error) {
         console.error('Auto-save error:', error);
     }
@@ -314,7 +351,6 @@ function loadGameConfirm() {
     closeSavePopup();
     showConfirm('정말 불러오시겠습니까?\n현재 진행상황이 사라집니다.', () => {
         loadGame(currentSlotNumber);
-        showMessage('게임을 불러왔습니다.');
     });
 }
 
@@ -327,12 +363,21 @@ function deleteGameConfirm() {
 
 function loadGame(slot) {
     try {
-        const saveData = localStorage.getItem(`nightmare_save_${slot}`);
-        if (saveData) {
-            gameState = JSON.parse(saveData);
+        const saveDataStr = getStorage(`nightmare_save_${slot}`);
+        if (saveDataStr) {
+            const loadedState = JSON.parse(saveDataStr);
+            gameState = loadedState;
             updateUI();
+            
             // 현재 씬에 맞는 텍스트 표시
-            displayText(['게임을 불러왔습니다.']);
+            if (gameScripts[gameState.currentScene]) {
+                displayText(gameScripts[gameState.currentScene].text);
+            } else {
+                displayText(['게임을 불러왔습니다.']);
+            }
+            showMessage('게임을 불러왔습니다.');
+        } else {
+            showMessage('저장된 데이터가 없습니다.');
         }
     } catch (error) {
         showMessage('불러오기 중 오류가 발생했습니다.');
@@ -342,7 +387,7 @@ function loadGame(slot) {
 
 function deleteGame(slot) {
     try {
-        localStorage.removeItem(`nightmare_save_${slot}`);
+        removeStorage(`nightmare_save_${slot}`);
 
         // 세이브 슬롯 표시 업데이트
         const slotElement = document.querySelector(`.save-slot:nth-child(${slot})`);
@@ -383,15 +428,18 @@ function resetGame() {
     try {
         // 모든 세이브 파일 삭제
         for (let i = 1; i <= 3; i++) {
-            localStorage.removeItem(`nightmare_save_${i}`);
+            removeStorage(`nightmare_save_${i}`);
             const slotElement = document.querySelector(`.save-slot:nth-child(${i})`);
             slotElement.classList.remove('saved');
             slotElement.innerHTML = i;
         }
 
         // 자동 저장 및 해금된 엔딩 삭제
-        localStorage.removeItem('nightmare_autosave');
-        localStorage.removeItem('nightmare_endings');
+        removeStorage('nightmare_autosave');
+        removeStorage('nightmare_endings');
+        
+        // 메모리 데이터도 초기화
+        saveData = {};
 
         // 게임 상태 초기화
         gameState = {
@@ -438,7 +486,7 @@ function showMessage(message) {
 function unlockEnding(endingName) {
     if (!gameState.unlockedEndings.includes(endingName)) {
         gameState.unlockedEndings.push(endingName);
-        localStorage.setItem('nightmare_endings', JSON.stringify(gameState.unlockedEndings));
+        setStorage('nightmare_endings', JSON.stringify(gameState.unlockedEndings));
         showMessage(`새 엔딩 해금: ${endingName}`);
         saveGameState();
     }
@@ -448,13 +496,13 @@ function unlockEnding(endingName) {
 function initGame() {
     try {
         // 해금된 엔딩 불러오기
-        const savedEndings = localStorage.getItem('nightmare_endings');
+        const savedEndings = getStorage('nightmare_endings');
         if (savedEndings) {
             gameState.unlockedEndings = JSON.parse(savedEndings);
         }
 
         // 자동 저장 불러오기 (페이지를 새로고침해도 진행상황 유지)
-        const autoSave = localStorage.getItem('nightmare_autosave');
+        const autoSave = getStorage('nightmare_autosave');
         if (autoSave) {
             try {
                 const loadedState = JSON.parse(autoSave);
@@ -481,7 +529,7 @@ function initGame() {
 
         // 저장된 세이브 슬롯 확인
         for (let i = 1; i <= 3; i++) {
-            if (localStorage.getItem(`nightmare_save_${i}`)) {
+            if (getStorage(`nightmare_save_${i}`)) {
                 const slotElement = document.querySelector(`.save-slot:nth-child(${i})`);
                 slotElement.classList.add('saved');
                 slotElement.innerHTML = '✓';

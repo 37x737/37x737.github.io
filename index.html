@@ -3,282 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>세이브 테스트</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #333;
-            color: white;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #444;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .stats {
-            background: #555;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-        }
-        button {
-            background: #666;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            margin: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #777;
-        }
-        .save-slots {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        .save-slot {
-            width: 50px;
-            height: 50px;
-            background: #555;
-            border: 2px solid #666;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .save-slot.saved {
-            border-color: #4a9eff;
-            color: #4a9eff;
-        }
-        #message {
-            background: #222;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            min-height: 20px;
-        }
-    </style>
+    <title>완전판</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h2>세이브/로드 테스트</h2>
-        
-        <div class="stats">
-            <div>테스트 값: <span id="testValue">0</span></div>
-            <div>카운터: <span id="counter">0</span></div>
+    <div class="game-container">
+        <!-- 상단 스탯바 -->
+        <div class="stats-bar">
+            <div class="stats-left">
+                <div class="day-counter">1일차</div>
+                <div class="time-phase">아침</div>
+                <div class="mental-section">
+                    <span>정신력:</span>
+                    <div class="mental-bar">
+                        <div class="mental-fill" style="width: 100%"></div>
+                    </div>
+                    <span class="mental-number">100</span>
+                </div>
+            </div>
+            <div class="menu-btn" onclick="toggleMenu()">메뉴</div>
         </div>
         
-        <div>
-            <button onclick="increaseValue()">값 증가</button>
-            <button onclick="decreaseValue()">값 감소</button>
-            <button onclick="resetValue()">리셋</button>
+        <!-- 텍스트 영역 -->
+        <div class="text-container">
+            <div class="text-box" id="textBox" onclick="nextText()">
+                여기를 클릭하여 시작하세요...
+            </div>
         </div>
         
+        <!-- 선택지 영역 -->
+        <div class="choices-container" id="choicesContainer">
+            <!-- 선택지들이 여기에 동적으로 추가됩니다 -->
+        </div>
+        
+        <!-- 세이브 슬롯 -->
         <div class="save-slots">
-            <div class="save-slot" onclick="handleSave(1)">1</div>
-            <div class="save-slot" onclick="handleSave(2)">2</div>
-            <div class="save-slot" onclick="handleSave(3)">3</div>
+            <div class="save-slot" onclick="handleSaveSlot(1)">1</div>
+            <div class="save-slot" onclick="handleSaveSlot(2)">2</div>
+            <div class="save-slot" onclick="handleSaveSlot(3)">3</div>
         </div>
         
-        <div>
-            <button onclick="testLocalStorage()">localStorage 테스트</button>
-            <button onclick="showAllSaves()">모든 세이브 확인</button>
-            <button onclick="clearAllSaves()">모든 세이브 삭제</button>
+        <!-- 메뉴 오버레이 -->
+        <div class="menu-overlay" id="menuOverlay">
+            <div class="menu-content">
+                <div class="menu-section">
+                    <div class="menu-title">호감도</div>
+                    <div class="status-note">* 매일 아침에 갱신됨</div>
+                    <div class="affection-display">
+                        <span>사오리:</span>
+                        <span id="saoriAffection">0</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>리에:</span>
+                        <span id="rieAffection">0</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>미사키:</span>
+                        <span id="misakiAffection">0</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>카즈토:</span>
+                        <span id="kazutoAffection">0</span>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-title">정신력 상태</div>
+                    <div class="status-note">* 매일 아침에 갱신됨</div>
+                    <div class="affection-display">
+                        <span>히로키:</span>
+                        <span id="playerMental">100</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>사오리:</span>
+                        <span id="saoriMental">100</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>리에:</span>
+                        <span id="rieMental">100</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>미사키:</span>
+                        <span id="misakiMental">100</span>
+                    </div>
+                    <div class="affection-display">
+                        <span>카즈토:</span>
+                        <span id="kazutoMental">100</span>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-title">생존 현황</div>
+                    <div class="survival-list" id="survivalList">
+                        <!-- 생존 현황이 여기에 표시됩니다 -->
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-title">해금된 엔딩</div>
+                    <div class="ending-list" id="endingList">
+                        <!-- 엔딩 목록이 여기에 표시됩니다 -->
+                    </div>
+                </div>
+                
+                <button class="close-btn" onclick="toggleMenu()">닫기</button>
+                <button class="reset-btn" onclick="confirmReset()">게임 초기화</button>
+            </div>
         </div>
         
-        <div id="message">메시지가 여기에 표시됩니다.</div>
+        <!-- 세이브 슬롯 팝업 -->
+        <div class="popup-overlay" id="savePopup">
+            <div class="popup-content">
+                <div class="popup-title">세이브 슬롯 <span id="currentSlot">1</span></div>
+                <div class="save-info" id="saveInfo">
+                    <!-- 세이브 정보가 여기에 표시됩니다 -->
+                </div>
+                <div class="popup-buttons">
+                    <button class="popup-btn primary" onclick="saveGameSlot()">저장</button>
+                    <button class="popup-btn secondary" onclick="loadGameConfirm()">불러오기</button>
+                    <button class="popup-btn danger" onclick="deleteGameConfirm()">삭제</button>
+                    <button class="popup-btn cancel" onclick="closeSavePopup()">취소</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 확인 팝업 -->
+        <div class="confirm-overlay" id="confirmPopup">
+            <div class="confirm-content">
+                <div class="popup-title" id="confirmTitle">확인</div>
+                <div id="confirmMessage">정말 실행하시겠습니까?</div>
+                <div class="popup-buttons">
+                    <button class="popup-btn primary" id="confirmYes">예</button>
+                    <button class="popup-btn secondary" onclick="closeConfirmPopup()">아니오</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 호감도/정신력 변화 알림 -->
+        <div class="affection-change" id="affectionChange">
+            <div id="affectionChangeText"></div>
+        </div>
+
+        <!-- 캐릭터 사망 알림 -->
+        <div class="death-notification" id="deathNotification">
+            <div class="death-content">
+                <div id="deathText"></div>
+                <button class="death-close" onclick="closeDeathNotification()">확인</button>
+            </div>
+        </div>
+
+        <!-- 엔딩 화면 -->
+        <div class="ending-screen" id="endingScreen">
+            <div class="ending-content">
+                <div class="ending-title" id="endingTitle"></div>
+                <div class="ending-text" id="endingText"></div>
+                <div class="ending-buttons">
+                    <button class="ending-btn" onclick="backToTitle()">타이틀로</button>
+                    <button class="ending-btn" onclick="continuePlaying()">계속하기</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script>
-        // 테스트용 게임 상태
-        let gameData = {
-            testValue: 0,
-            counter: 0,
-            timestamp: Date.now()
-        };
-
-        // 메시지 표시
-        function showMessage(msg) {
-            document.getElementById('message').textContent = msg;
-            console.log(msg);
-        }
-
-        // UI 업데이트
-        function updateUI() {
-            document.getElementById('testValue').textContent = gameData.testValue;
-            document.getElementById('counter').textContent = gameData.counter;
-        }
-
-        // 값 조작 함수들
-        function increaseValue() {
-            gameData.testValue += 10;
-            gameData.counter++;
-            gameData.timestamp = Date.now();
-            updateUI();
-            showMessage('값이 증가했습니다.');
-        }
-
-        function decreaseValue() {
-            gameData.testValue -= 5;
-            gameData.counter++;
-            gameData.timestamp = Date.now();
-            updateUI();
-            showMessage('값이 감소했습니다.');
-        }
-
-        function resetValue() {
-            gameData.testValue = 0;
-            gameData.counter = 0;
-            gameData.timestamp = Date.now();
-            updateUI();
-            showMessage('값이 리셋되었습니다.');
-        }
-
-        // localStorage 테스트
-        function testLocalStorage() {
-            try {
-                // 쓰기 테스트
-                const testKey = 'localStorage_test';
-                const testData = 'test_data_' + Date.now();
-                localStorage.setItem(testKey, testData);
-                
-                // 읽기 테스트
-                const retrieved = localStorage.getItem(testKey);
-                
-                if (retrieved === testData) {
-                    showMessage('✅ localStorage 정상 작동');
-                    localStorage.removeItem(testKey);
-                } else {
-                    showMessage('❌ localStorage 읽기 실패');
-                }
-            } catch (error) {
-                showMessage('❌ localStorage 오류: ' + error.message);
-            }
-        }
-
-        // 세이브 함수
-        function saveGame(slot) {
-            try {
-                const saveKey = `nightmare_test_${slot}`;
-                const saveDataStr = JSON.stringify(gameData);
-                
-                // localStorage에 저장
-                localStorage.setItem(saveKey, saveDataStr);
-                
-                // 저장 확인
-                const checkData = localStorage.getItem(saveKey);
-                if (checkData === saveDataStr) {
-                    showMessage(`✅ 슬롯 ${slot}에 저장 성공`);
-                    
-                    // 슬롯 UI 업데이트
-                    const slotElement = document.querySelector(`.save-slot:nth-child(${slot})`);
-                    slotElement.classList.add('saved');
-                    slotElement.textContent = '✓';
-                    
-                    return true;
-                } else {
-                    showMessage(`❌ 슬롯 ${slot} 저장 검증 실패`);
-                    return false;
-                }
-            } catch (error) {
-                showMessage(`❌ 저장 오류: ${error.message}`);
-                return false;
-            }
-        }
-
-        // 로드 함수
-        function loadGame(slot) {
-            try {
-                const saveKey = `nightmare_test_${slot}`;
-                const saveDataStr = localStorage.getItem(saveKey);
-                
-                if (saveDataStr) {
-                    const loadedData = JSON.parse(saveDataStr);
-                    gameData = loadedData;
-                    updateUI();
-                    showMessage(`✅ 슬롯 ${slot}에서 로드 성공`);
-                    return true;
-                } else {
-                    showMessage(`❌ 슬롯 ${slot}에 저장된 데이터 없음`);
-                    return false;
-                }
-            } catch (error) {
-                showMessage(`❌ 로드 오류: ${error.message}`);
-                return false;
-            }
-        }
-
-        // 세이브 슬롯 처리
-        function handleSave(slot) {
-            const saveKey = `nightmare_test_${slot}`;
-            const existingData = localStorage.getItem(saveKey);
-            
-            if (existingData) {
-                // 기존 데이터가 있으면 선택 메뉴
-                if (confirm(`슬롯 ${slot}에 저장된 데이터가 있습니다.\n\n새로 저장(OK) / 불러오기(Cancel)`)) {
-                    saveGame(slot);
-                } else {
-                    loadGame(slot);
-                }
-            } else {
-                // 새 저장
-                saveGame(slot);
-            }
-        }
-
-        // 모든 세이브 확인
-        function showAllSaves() {
-            let message = '저장된 데이터:\n';
-            for (let i = 1; i <= 3; i++) {
-                const saveKey = `nightmare_test_${i}`;
-                const data = localStorage.getItem(saveKey);
-                if (data) {
-                    try {
-                        const parsed = JSON.parse(data);
-                        message += `슬롯 ${i}: 값=${parsed.testValue}, 카운터=${parsed.counter}\n`;
-                    } catch (e) {
-                        message += `슬롯 ${i}: 데이터 손상\n`;
-                    }
-                } else {
-                    message += `슬롯 ${i}: 비어있음\n`;
-                }
-            }
-            alert(message);
-        }
-
-        // 모든 세이브 삭제
-        function clearAllSaves() {
-            if (confirm('모든 저장 데이터를 삭제하시겠습니까?')) {
-                for (let i = 1; i <= 3; i++) {
-                    localStorage.removeItem(`nightmare_test_${i}`);
-                    const slotElement = document.querySelector(`.save-slot:nth-child(${i})`);
-                    slotElement.classList.remove('saved');
-                    slotElement.textContent = i;
-                }
-                showMessage('모든 저장 데이터가 삭제되었습니다.');
-            }
-        }
-
-        // 페이지 로드 시 초기화
-        window.onload = function() {
-            updateUI();
-            showMessage('테스트 준비 완료');
-            
-            // 기존 저장된 슬롯 표시
-            for (let i = 1; i <= 3; i++) {
-                const saveKey = `nightmare_test_${i}`;
-                if (localStorage.getItem(saveKey)) {
-                    const slotElement = document.querySelector(`.save-slot:nth-child(${i})`);
-                    slotElement.classList.add('saved');
-                    slotElement.textContent = '✓';
-                }
-            }
-        };
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>

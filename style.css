@@ -5,10 +5,11 @@
 }
 
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Arial', 'Malgun Gothic', sans-serif;
     background-color: #404040;
     color: #eee;
     overflow-x: hidden;
+    user-select: none;
 }
 
 .game-container {
@@ -20,7 +21,7 @@ body {
 
 .text-container {
     padding: 20px;
-    padding-top: 70px; /* 상단 바 높이만큼 여백 추가 */
+    padding-top: 70px;
     min-height: 60vh;
     display: flex;
     flex-direction: column;
@@ -28,19 +29,29 @@ body {
 }
 
 .text-box {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     border: 2px solid #333;
     border-radius: 10px;
-    padding: 20px;
+    padding: 25px;
     margin-bottom: 20px;
-    min-height: 150px;
-    font-size: 16px;
-    line-height: 1.6;
+    min-height: 180px;
+    font-size: 18px;
+    line-height: 1.8;
     cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.text-box:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.typing-text {
+    animation: typewriter 0.05s linear;
 }
 
 .choices-container {
     padding: 0 20px;
+    margin-bottom: 100px;
 }
 
 .choice {
@@ -70,44 +81,58 @@ body {
     font-weight: bold;
 }
 
+.choice.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .stats-bar {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    background: rgba(0, 0, 0, 0.9);
-    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.95);
+    padding: 12px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     z-index: 100;
     font-size: 14px;
+    backdrop-filter: blur(10px);
 }
 
 .stats-left {
     display: flex;
     align-items: center;
+    gap: 15px;
 }
 
 .mental-section {
     display: flex;
     align-items: center;
-    margin-left: 15px;
 }
 
 .mental-bar {
-    width: 100px;
-    height: 16px;
+    width: 120px;
+    height: 18px;
     background: #333;
-    border-radius: 8px;
+    border-radius: 9px;
     overflow: hidden;
-    margin-left: 8px;
+    margin: 0 8px;
+    border: 1px solid #555;
 }
 
 .mental-fill {
     height: 100%;
     background: linear-gradient(90deg, #ff4444 0%, #ffaa44 50%, #44ff44 100%);
     transition: width 0.5s ease;
+    border-radius: 8px;
+}
+
+.mental-number {
+    font-weight: bold;
+    min-width: 30px;
 }
 
 .save-slots {
@@ -116,30 +141,36 @@ body {
     right: 20px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
+    z-index: 50;
 }
 
 .save-slot {
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 0, 0, 0.7);
-    border: 1px solid #555;
-    border-radius: 5px;
+    width: 45px;
+    height: 45px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #555;
+    border-radius: 8px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    transition: background 0.3s ease;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
 }
 
 .save-slot:hover {
     background: rgba(0, 0, 0, 0.9);
+    border-color: #777;
+    transform: scale(1.05);
 }
 
 .save-slot.saved {
     border-color: #4a9eff;
     color: #4a9eff;
+    background: rgba(74, 158, 255, 0.1);
 }
 
 .popup-overlay {
@@ -155,37 +186,54 @@ body {
     display: none;
     align-items: center;
     justify-content: center;
+    backdrop-filter: blur(3px);
 }
 
 .popup-content {
     background: #404040;
     border: 2px solid #4a9eff;
-    border-radius: 10px;
-    padding: 20px;
-    max-width: 300px;
+    border-radius: 15px;
+    padding: 25px;
+    max-width: 400px;
+    width: 90%;
     text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .popup-title {
-    font-size: 16px;
+    font-size: 18px;
     margin-bottom: 15px;
     color: #4a9eff;
+    font-weight: bold;
+}
+
+.save-info {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: left;
 }
 
 .popup-buttons {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     justify-content: center;
-    margin-top: 15px;
+    margin-top: 20px;
+    flex-wrap: wrap;
 }
 
 .popup-btn {
-    padding: 10px 20px;
+    padding: 10px 15px;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
-    transition: background 0.3s ease;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 70px;
 }
 
 .popup-btn.primary {
@@ -215,6 +263,15 @@ body {
     background: #cc3333;
 }
 
+.popup-btn.cancel {
+    background: #888;
+    color: white;
+}
+
+.popup-btn.cancel:hover {
+    background: #777;
+}
+
 .confirm-overlay {
     position: fixed;
     top: 0;
@@ -233,9 +290,10 @@ body {
 .confirm-content {
     background: #404040;
     border: 2px solid #ff4444;
-    border-radius: 10px;
-    padding: 20px;
-    max-width: 250px;
+    border-radius: 15px;
+    padding: 25px;
+    max-width: 350px;
+    width: 90%;
     text-align: center;
 }
 
@@ -243,11 +301,12 @@ body {
     background: #ff4444;
     color: white;
     border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
+    padding: 10px 20px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 12px;
-    margin-top: 10px;
+    margin-top: 15px;
+    transition: background 0.3s ease;
 }
 
 .reset-btn:hover {
@@ -258,9 +317,10 @@ body {
     color: #eee;
     cursor: pointer;
     font-size: 14px;
-    padding: 5px 10px;
-    border-radius: 3px;
+    padding: 8px 15px;
+    border-radius: 6px;
     transition: background 0.3s ease;
+    font-weight: bold;
 }
 
 .menu-btn:hover {
@@ -275,7 +335,7 @@ body {
     bottom: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     z-index: 1000;
     display: none;
     padding: 20px;
@@ -284,16 +344,17 @@ body {
 
 .menu-content {
     background: #404040;
-    border-radius: 10px;
-    padding: 20px;
-    max-width: 400px;
+    border-radius: 15px;
+    padding: 25px;
+    max-width: 500px;
     margin: 50px auto;
+    border: 1px solid #666;
 }
 
 .menu-section {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #555;
 }
 
 .menu-section:last-child {
@@ -301,53 +362,89 @@ body {
 }
 
 .menu-title {
-    font-size: 18px;
-    margin-bottom: 10px;
+    font-size: 20px;
+    margin-bottom: 15px;
     color: #4a9eff;
+    font-weight: bold;
 }
 
 .status-note {
     font-size: 12px;
-    color: #888;
-    margin-bottom: 10px;
+    color: #aaa;
+    margin-bottom: 15px;
     font-style: italic;
 }
 
 .affection-display {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 5px;
-    font-size: 14px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    padding: 5px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+.survival-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.survival-status {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    font-size: 15px;
+}
+
+.survival-status.alive {
+    border-left: 3px solid #44ff44;
+}
+
+.survival-status.dead {
+    border-left: 3px solid #ff4444;
+    opacity: 0.6;
 }
 
 .day-counter {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     color: #4a9eff;
 }
 
 .time-phase {
-    font-size: 16px;
+    font-size: 18px;
     color: #ffaa44;
-    margin-left: 10px;
+    font-weight: bold;
 }
 
 .ending-list {
-    max-height: 200px;
+    max-height: 300px;
     overflow-y: auto;
+    display: grid;
+    gap: 8px;
 }
 
 .ending-item {
-    padding: 5px 10px;
-    margin: 5px 0;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 5px;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    border-left: 3px solid #666;
 }
 
-.ending-item:hover {
-    background: rgba(0, 0, 0, 0.8);
+.ending-item:hover:not(.locked) {
+    background: rgba(0, 0, 0, 0.5);
+    border-left-color: #4a9eff;
+}
+
+.ending-item.unlocked {
+    border-left-color: #44ff44;
+    color: #44ff44;
 }
 
 .ending-item.locked {
@@ -355,19 +452,21 @@ body {
     cursor: default;
 }
 
-.ending-item.locked:hover {
-    background: rgba(0, 0, 0, 0.5);
-}
-
 .close-btn {
-    background: #ff4444;
+    background: #4a9eff;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 12px 25px;
+    border-radius: 8px;
     cursor: pointer;
     float: right;
     margin-top: 20px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.close-btn:hover {
+    background: #357abd;
 }
 
 .affection-change {
@@ -378,32 +477,191 @@ body {
     background: rgba(0, 0, 0, 0.9);
     border: 2px solid #4a9eff;
     border-radius: 10px;
-    padding: 20px;
+    padding: 20px 30px;
     z-index: 1500;
     display: none;
     text-align: center;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
-    min-width: 200px;
+    min-width: 250px;
+    animation: fadeInOut 2s ease-in-out;
 }
 
-@media (max-width: 480px) {
-    .text-box {
-        font-size: 14px;
-        padding: 15px;
-    }
+.death-notification {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 4000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
 
+.death-content {
+    background: #2a2a2a;
+    border: 3px solid #ff4444;
+    border-radius: 15px;
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(255, 68, 68, 0.3);
+}
+
+.death-close {
+    background: #ff4444;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.death-close:hover {
+    background: #cc3333;
+}
+
+.ending-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    z-index: 5000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.ending-content {
+    text-align: center;
+    max-width: 600px;
+    padding: 40px;
+}
+
+.ending-title {
+    font-size: 36px;
+    color: #4a9eff;
+    margin-bottom: 30px;
+    font-weight: bold;
+    text-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
+}
+
+.ending-text {
+    font-size: 18px;
+    line-height: 2;
+    margin-bottom: 40px;
+    color: #eee;
+}
+
+.ending-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.ending-btn {
+    background: #4a9eff;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.ending-btn:hover {
+    background: #357abd;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, -60%); }
+    20% { opacity: 1; transform: translate(-50%, -50%); }
+    80% { opacity: 1; transform: translate(-50%, -50%); }
+    100% { opacity: 0; transform: translate(-50%, -40%); }
+}
+
+@keyframes typewriter {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2a2a2a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .text-box {
+        font-size: 16px;
+        padding: 20px;
+        min-height: 150px;
+    }
+    
     .choice {
         font-size: 14px;
         padding: 12px;
     }
-
+    
     .stats-bar {
         font-size: 12px;
-        padding: 8px 15px;
+        padding: 10px 15px;
     }
-
-    .menu-btn {
-        font-size: 12px;
+    
+    .day-counter {
+        font-size: 16px;
+    }
+    
+    .time-phase {
+        font-size: 14px;
+    }
+    
+    .mental-bar {
+        width: 80px;
+    }
+    
+    .popup-content {
+        padding: 20px;
+        max-width: 350px;
+    }
+    
+    .ending-title {
+        font-size: 28px;
+    }
+    
+    .ending-text {
+        font-size: 16px;
+    }
+    
+    .ending-buttons {
+        flex-direction: column;
+        align-items: center;
     }
 }

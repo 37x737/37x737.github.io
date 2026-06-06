@@ -1,170 +1,411 @@
+<!--제미나이-->
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>완전판</title>
-    <link rel="stylesheet" href="style.css">
+    <title>야구 감독 시뮬레이션 프로토타입</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #7f8c8d;
+        }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .scoreboard {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .panel {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .field-status {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .bases {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .base {
+            width: 30px;
+            height: 30px;
+            background-color: #eee;
+            transform: rotate(45deg);
+            border: 2px solid #ccc;
+        }
+        .base.active {
+            background-color: #e74c3c;
+            border-color: #c0392b;
+        }
+        .log-container {
+            height: 300px;
+            overflow-y: auto;
+            background-color: #f1f2f6;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #dcdde1;
+        }
+        .inning-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+    </style>
 </head>
 <body>
-    <div class="game-container">
-        <!-- 상단 스탯바 -->
-        <div class="stats-bar">
-            <div class="stats-left">
-                <div class="day-counter">1일차</div>
-                <div class="time-phase">아침</div>
-                <div class="mental-section">
-                    <span>정신력:</span>
-                    <div class="mental-bar">
-                        <div class="mental-fill" style="width: 100%"></div>
-                    </div>
-                    <span class="mental-number">100</span>
-                </div>
-            </div>
-            <div class="menu-btn" onclick="toggleMenu()">메뉴</div>
-        </div>
-        
-        <!-- 텍스트 영역 -->
-        <div class="text-container">
-            <div class="text-box" id="textBox" onclick="nextText()">
-                여기를 클릭하여 시작하세요...
-            </div>
-        </div>
-        
-        <!-- 선택지 영역 -->
-        <div class="choices-container" id="choicesContainer">
-            <!-- 선택지들이 여기에 동적으로 추가됩니다 -->
-        </div>
-        
-        <!-- 세이브 슬롯 -->
-        <div class="save-slots">
-            <div class="save-slot" onclick="handleSaveSlot(1)">1</div>
-            <div class="save-slot" onclick="handleSaveSlot(2)">2</div>
-            <div class="save-slot" onclick="handleSaveSlot(3)">3</div>
-        </div>
-        
-        <!-- 메뉴 오버레이 -->
-        <div class="menu-overlay" id="menuOverlay">
-            <div class="menu-content">
-                <div class="menu-section">
-                    <div class="menu-title">호감도</div>
-                    <div class="status-note">* 매일 아침에 갱신됨</div>
-                    <div class="affection-display">
-                        <span>사오리:</span>
-                        <span id="saoriAffection">0</span>
-                    </div>
-                    <div class="affection-display">
-                        <span>리에:</span>
-                        <span id="rieAffection">0</span>
-                    </div>
-                    <div class="affection-display">
-                        <span>미사키:</span>
-                        <span id="misakiAffection">0</span>
-                    </div>
-                    <div class="affection-display">
-                        <span>카즈토:</span>
-                        <span id="kazutoAffection">0</span>
-                    </div>
-                </div>
-                
-                <div class="menu-section">
-                    <div class="menu-title">정신력 상태</div>
-                    <div class="status-note">* 매일 아침에 갱신됨</div>
-                    <div class="affection-display">
-                        <span>히로키:</span>
-                        <span id="playerMental">100</span>
-                    </div>
-                    <div class="affection-display">
-                        <span>사오리:</span>
-                        <span id="saoriMental">100</span>
-                    </div>
-                    <div class="affection-display">
-                        <span>리에:</span>
-                        <span id="rieMental">100</span>
-                    </div>
-                    <div class="affection-display">
-                        <span>미사키:</span>
-                        <span id="misakiMental">100</span>
-                    </div>
-                    <div class="affection-display">
-                        <span>카즈토:</span>
-                        <span id="kazutoMental">100</span>
-                    </div>
-                </div>
-                
-                <div class="menu-section">
-                    <div class="menu-title">생존 현황</div>
-                    <div class="survival-list" id="survivalList">
-                        <!-- 생존 현황이 여기에 표시됩니다 -->
-                    </div>
-                </div>
-                
-                <div class="menu-section">
-                    <div class="menu-title">해금된 엔딩</div>
-                    <div class="ending-list" id="endingList">
-                        <!-- 엔딩 목록이 여기에 표시됩니다 -->
-                    </div>
-                </div>
-                
-                <button class="close-btn" onclick="toggleMenu()">닫기</button>
-                <button class="reset-btn" onclick="confirmReset()">게임 초기화</button>
-            </div>
-        </div>
-        
-        <!-- 세이브 슬롯 팝업 -->
-        <div class="popup-overlay" id="savePopup">
-            <div class="popup-content">
-                <div class="popup-title">세이브 슬롯 <span id="currentSlot">1</span></div>
-                <div class="save-info" id="saveInfo">
-                    <!-- 세이브 정보가 여기에 표시됩니다 -->
-                </div>
-                <div class="popup-buttons">
-                    <button class="popup-btn primary" onclick="saveGameSlot()">저장</button>
-                    <button class="popup-btn secondary" onclick="loadGameConfirm()">불러오기</button>
-                    <button class="popup-btn danger" onclick="deleteGameConfirm()">삭제</button>
-                    <button class="popup-btn cancel" onclick="closeSavePopup()">취소</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 확인 팝업 -->
-        <div class="confirm-overlay" id="confirmPopup">
-            <div class="confirm-content">
-                <div class="popup-title" id="confirmTitle">확인</div>
-                <div id="confirmMessage">정말 실행하시겠습니까?</div>
-                <div class="popup-buttons">
-                    <button class="popup-btn primary" id="confirmYes">예</button>
-                    <button class="popup-btn secondary" onclick="closeConfirmPopup()">아니오</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 호감도/정신력 변화 알림 -->
-        <div class="affection-change" id="affectionChange">
-            <div id="affectionChangeText"></div>
-        </div>
 
-        <!-- 캐릭터 사망 알림 -->
-        <div class="death-notification" id="deathNotification">
-            <div class="death-content">
-                <div id="deathText"></div>
-                <button class="death-close" onclick="closeDeathNotification()">확인</button>
-            </div>
-        </div>
-
-        <!-- 엔딩 화면 -->
-        <div class="ending-screen" id="endingScreen">
-            <div class="ending-content">
-                <div class="ending-title" id="endingTitle"></div>
-                <div class="ending-text" id="endingText"></div>
-                <div class="ending-buttons">
-                    <button class="ending-btn" onclick="backToTitle()">타이틀로</button>
-                    <button class="ending-btn" onclick="continuePlaying()">계속하기</button>
-                </div>
-            </div>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>⚾ 매니저 베이스볼 v1.0</h1>
     </div>
 
-    <script src="script.js"></script>
+    <div class="scoreboard">
+        <table>
+            <thead>
+                <tr>
+                    <th>팀명</th>
+                    <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
+                    <th>R</th>
+                </tr>
+            </thead>
+            <tbody id="score-body">
+                <tr id="team-away">
+                    <td><strong>상대 팀</strong></td>
+                    <td id="away-1"></td><td id="away-2"></td><td id="away-3"></td><td id="away-4"></td><td id="away-5"></td><td id="away-6"></td><td id="away-7"></td><td id="away-8"></td><td id="away-9"></td>
+                    <td id="away-r" style="font-weight:bold; background-color:#f8f9fa;">0</td>
+                </tr>
+                <tr id="team-home">
+                    <td><strong>우리 팀</strong></td>
+                    <td id="home-1"></td><td id="home-2"></td><td id="home-3"></td><td id="home-4"></td><td id="home-5"></td><td id="home-6"></td><td id="home-7"></td><td id="home-8"></td><td id="home-9"></td>
+                    <td id="home-r" style="font-weight:bold; background-color:#f8f9fa;">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="controls">
+        <button id="btn-atbat" onclick="simulateAtBat()">다음 타자 시뮬레이션</button>
+        <button id="btn-inning" onclick="simulateInning()">이닝 스킵</button>
+        <button id="btn-reset" onclick="initGame()" style="background-color:#e74c3c;">게임 리셋</button>
+    </div>
+
+    <div class="dashboard">
+        <div class="panel field-status">
+            <h3>현재 상황</h3>
+            <div class="inning-text" id="current-inning-text">1회 초</div>
+            <div style="font-size: 1.5rem; font-weight: bold; margin: 10px 0;">
+                <span id="out-count">0</span> OUT
+            </div>
+            <div class="bases">
+                <div class="base" id="base-3"></div> <div class="base" id="base-2"></div> <div class="base" id="base-1"></div> </div>
+            <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 15px;">루상 진행 방향: 1루(우) → 2루(중) → 3루(좌)</p>
+        </div>
+
+        <div class="panel">
+            <h3>중계 로그</h3>
+            <div class="log-container" id="play-log">
+                </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 게임 상태 변수
+    let gameState = {
+        inning: 1,
+        isTop: true, // true: 초(어웨이 공격), false: 말(홈 공격)
+        outs: 0,
+        bases: [false, false, false], // [1루, 2루, 3루]
+        scores: {
+            away: [0,0,0,0,0,0,0,0,0],
+            home: [0,0,0,0,0,0,0,0,0]
+        },
+        runs: { away: 0, home: 0 },
+        isGameOver: false
+    };
+
+    // 타석 결과 확률 정의 (간략화된 확률 모델)
+    const atBatOutcomes = [
+        { result: '아웃', weight: 65 },
+        { result: '안타', weight: 15 },
+        { result: '2루타', weight: 8 },
+        { result: '3루타', weight: 2 },
+        { result: '홈런', weight: 5 },
+        { result: '볼넷', weight: 5 }
+    ];
+
+    // 가중치 기반 랜덤 선택 함수
+    function getRandomOutcome() {
+        let sum = atBatOutcomes.reduce((acc, el) => acc + el.weight, 0);
+        let rand = Math.random() * sum;
+        for (let outcome of atBatOutcomes) {
+            if (rand < outcome.weight) return outcome.result;
+            rand -= outcome.weight;
+        }
+    }
+
+    // 로그 추가 함수
+    function addLog(message) {
+        const logBox = document.getElementById('play-log');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        const teamStr = gameState.isTop ? "[상대 팀]" : "[우리 팀]";
+        entry.innerHTML = `<strong>${gameState.inning}회 ${gameState.isTop ? '초' : '말'}</strong> ${teamStr} - ${message}`;
+        logBox.prepend(entry);
+    }
+
+    // 진루 및 득점 처리 로직
+    function advanceRunners(basesToAdvance) {
+        let runsScored = 0;
+        let newBases = [false, false, false];
+
+        // 기존 주자 이동
+        for (let i = 2; i >= 0; i--) {
+            if (gameState.bases[i]) {
+                let nextBase = i + basesToAdvance;
+                if (nextBase > 2) {
+                    runsScored++; // 홈인
+                } else {
+                    newBases[nextBase] = true;
+                }
+            }
+        }
+        return { newBases, runsScored };
+    }
+
+    // 단일 타석 시뮬레이션
+    function simulateAtBat() {
+        if (gameState.isGameOver) return;
+
+        const result = getRandomOutcome();
+        let runsOnPlay = 0;
+        let logMessage = `타격... <strong>${result}!</strong>`;
+
+        if (result === '아웃') {
+            gameState.outs++;
+            if (gameState.outs >= 3) {
+                logMessage += ` <strong>쓰리아웃 교대!</strong>`;
+            }
+        } else if (result === '안타' || result === '볼넷') {
+            let advance = advanceRunners(1);
+            runsOnPlay = advance.runsScored;
+            gameState.bases = advance.newBases;
+            gameState.bases[0] = true; // 타자 주자 1루
+        } else if (result === '2루타') {
+            let advance = advanceRunners(2);
+            runsOnPlay = advance.runsScored;
+            gameState.bases = advance.newBases;
+            gameState.bases[1] = true; // 타자 주자 2루
+        } else if (result === '3루타') {
+            let advance = advanceRunners(3);
+            runsOnPlay = advance.runsScored;
+            gameState.bases = advance.newBases;
+            gameState.bases[2] = true; // 타자 주자 3루
+        } else if (result === '홈런') {
+            let advance = advanceRunners(4); // 모든 주자 홈인
+            runsOnPlay = advance.runsScored + 1; // 타자 본인 포함
+            gameState.bases = [false, false, false];
+            logMessage = `⚾ <strong>담장 밖으로 넘어갑니다! 홈런!</strong>`;
+        }
+
+        // 득점 처리
+        if (runsOnPlay > 0) {
+            logMessage += ` (${runsOnPlay}득점)`;
+            if (gameState.isTop) {
+                gameState.scores.away[gameState.inning - 1] += runsOnPlay;
+                gameState.runs.away += runsOnPlay;
+            } else {
+                gameState.scores.home[gameState.inning - 1] += runsOnPlay;
+                gameState.runs.home += runsOnPlay;
+            }
+        }
+
+        addLog(logMessage);
+        updateUI();
+
+        // 이닝 종료 처리
+        if (gameState.outs >= 3) {
+            changeInning();
+        }
+    }
+
+    // 이닝 변경 로직
+    function changeInning() {
+        gameState.outs = 0;
+        gameState.bases = [false, false, false];
+        
+        // 9회말이 끝났거나 9회초 종료 후 홈팀이 이기고 있는 경우 게임 종료
+        if (gameState.inning >= 9 && !gameState.isTop) {
+            endGame();
+            return;
+        }
+        if (gameState.inning >= 9 && gameState.isTop && gameState.runs.home > gameState.runs.away) {
+            endGame();
+            return;
+        }
+
+        if (gameState.isTop) {
+            gameState.isTop = false; // 초 -> 말
+        } else {
+            gameState.isTop = true;
+            gameState.inning++; // 말 -> 다음 회 초
+        }
+        
+        updateUI();
+    }
+
+    // 해당 이닝 전체 스킵 (아웃카운트 3개가 찰 때까지 반복)
+    function simulateInning() {
+        if (gameState.isGameOver) return;
+        let currentHalf = gameState.isTop;
+        let currentInning = gameState.inning;
+        
+        while(gameState.outs < 3 && !gameState.isGameOver && currentHalf === gameState.isTop && currentInning === gameState.inning) {
+            simulateAtBat();
+        }
+    }
+
+    // 게임 종료 처리
+    function endGame() {
+        gameState.isGameOver = true;
+        document.getElementById('btn-atbat').disabled = true;
+        document.getElementById('btn-inning').disabled = true;
+        
+        let resultMsg = "";
+        if(gameState.runs.home > gameState.runs.away) resultMsg = "우리 팀 승리! 🎉";
+        else if(gameState.runs.home < gameState.runs.away) resultMsg = "상대 팀 승리!";
+        else resultMsg = "무승부";
+
+        addLog(`<strong>[경기 종료]</strong> 최종 스코어 ${gameState.runs.away} : ${gameState.runs.home} - ${resultMsg}`);
+    }
+
+    // UI 업데이트 (전광판, 루상, 아웃카운트)
+    function updateUI() {
+        // 전광판 업데이트
+        for(let i=1; i<=9; i++) {
+            document.getElementById(`away-${i}`).innerText = (i <= gameState.inning && (gameState.isTop || i < gameState.inning) || i < gameState.inning) ? gameState.scores.away[i-1] : "";
+            document.getElementById(`home-${i}`).innerText = (i < gameState.inning || (!gameState.isTop && i === gameState.inning)) ? gameState.scores.home[i-1] : "";
+        }
+        document.getElementById('away-r').innerText = gameState.runs.away;
+        document.getElementById('home-r').innerText = gameState.runs.home;
+
+        // 상황판 업데이트
+        if(!gameState.isGameOver) {
+            document.getElementById('current-inning-text').innerText = `${gameState.inning}회 ${gameState.isTop ? '초' : '말'}`;
+        }
+        document.getElementById('out-count').innerText = gameState.outs;
+
+        // 루상 업데이트
+        document.getElementById('base-1').className = `base ${gameState.bases[0] ? 'active' : ''}`;
+        document.getElementById('base-2').className = `base ${gameState.bases[1] ? 'active' : ''}`;
+        document.getElementById('base-3').className = `base ${gameState.bases[2] ? 'active' : ''}`;
+    }
+
+    // 게임 초기화
+    function initGame() {
+        gameState = {
+            inning: 1,
+            isTop: true,
+            outs: 0,
+            bases: [false, false, false],
+            scores: { away: [0,0,0,0,0,0,0,0,0], home: [0,0,0,0,0,0,0,0,0] },
+            runs: { away: 0, home: 0 },
+            isGameOver: false
+        };
+        document.getElementById('play-log').innerHTML = '';
+        document.getElementById('btn-atbat').disabled = false;
+        document.getElementById('btn-inning').disabled = false;
+        
+        // 전광판 초기화
+        for(let i=1; i<=9; i++) {
+            document.getElementById(`away-${i}`).innerText = (i===1) ? "0" : "";
+            document.getElementById(`home-${i}`).innerText = "";
+        }
+        updateUI();
+        addLog("<strong>[경기 시작]</strong> 플레이볼!");
+    }
+
+    // 로드 시 초기화 실행
+    window.onload = initGame;
+</script>
+
 </body>
 </html>

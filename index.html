@@ -3,271 +3,903 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>야구 감독 시뮬레이터</title>
-
+<title>⚾ 야구 감독 시뮬레이션</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-body{
-    background:#1b1b1b;
-    color:white;
-    font-family:Arial;
-    margin:20px;
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1520;
+  --panel:#111c28;
+  --panel2:#162030;
+  --border:#1e2d3d;
+  --gold:#e8b84b;
+  --gold2:#f0cc6a;
+  --text:#dde6f0;
+  --muted:#5a7080;
+  --green:#2a6e3a;
+  --green2:#1e5a2a;
+  --dirt:#7a5030;
+  --red:#c03030;
+  --blue:#2a5090;
 }
+html,body{height:100%;font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.bebas{font-family:'Bebas Neue',cursive;letter-spacing:1px}
 
-h1{
-    text-align:center;
-}
+/* ── LAYOUT ── */
+#wrap{display:flex;flex-direction:column;height:100vh;max-width:1000px;margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border)}
 
-.container{
-    display:flex;
-    gap:20px;
-}
+/* HEADER */
+#hdr{background:var(--panel);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+#hdr h1{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--gold);margin-right:auto}
+.scoreboard{display:flex;align-items:center;gap:10px}
+.sb-team{text-align:center}
+.sb-name{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.sb-score{font-family:'Bebas Neue',cursive;font-size:34px;line-height:1;color:#fff}
+.sb-sep{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--muted)}
+.inn-box{text-align:center;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:4px 10px}
+.inn-num{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--gold);display:block}
+.inn-lbl{font-size:9px;color:var(--muted)}
+.count-box{display:flex;gap:10px}
+.cb-group{display:flex;flex-direction:column;gap:3px}
+.cb-lbl{font-size:9px;color:var(--muted);text-align:center}
+.cb-dots{display:flex;gap:3px}
+.dot{width:11px;height:11px;border-radius:50%;border:1.5px solid;transition:.2s}
+.dot.ball{border-color:#4a9a4a}.dot.ball.on{background:#4a9a4a}
+.dot.strike{border-color:var(--gold)}.dot.strike.on{background:var(--gold)}
+.dot.out{border-color:#c04040}.dot.out.on{background:#c04040}
 
-.panel{
-    background:#2b2b2b;
-    padding:15px;
-    border-radius:10px;
-    flex:1;
-}
+/* MAIN */
+#main{display:flex;flex:1;overflow:hidden}
 
-button{
-    padding:10px 20px;
-    font-size:16px;
-    cursor:pointer;
-}
+/* FIELD */
+#field{background:var(--green2);flex:1;display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px;overflow-y:auto}
+#field svg{width:100%;max-width:300px;flex-shrink:0}
+.batter-card{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;width:100%;max-width:300px}
+.bc-title{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.bc-name{font-family:'Bebas Neue',cursive;font-size:22px;color:#fff;margin-bottom:6px}
+.bc-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.bcs{background:rgba(255,255,255,.05);border-radius:4px;padding:4px;text-align:center}
+.bcs .v{font-size:13px;font-weight:700;color:var(--gold)}
+.bcs .k{font-size:9px;color:var(--muted)}
+.log-box{background:rgba(0,0,0,.35);border-radius:8px;padding:8px 10px;width:100%;max-width:300px;overflow-y:auto;flex:1;min-height:100px;max-height:180px}
+.log-line{font-size:12px;line-height:1.7;border-bottom:1px solid rgba(255,255,255,.04);padding:1px 0}
+.log-line:last-child{border:none}
+.lg{color:#6dc66d}.lb{color:#e06060}.ln{color:var(--muted)}.lh{color:var(--gold)}
 
-table{
-    width:100%;
-    border-collapse:collapse;
-}
+/* PANEL */
+#panel{width:270px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.sec{padding:12px;border-bottom:1px solid var(--border)}
+.sec-title{font-family:'Bebas Neue',cursive;font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:8px}
 
-th,td{
-    border:1px solid #555;
-    padding:6px;
-    text-align:center;
-}
+/* PITCHER CARD */
+.pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.pc-name{font-family:'Bebas Neue',cursive;font-size:20px;color:#fff}
+.pc-era{font-size:10px;color:var(--muted);margin-top:1px}
+.pc-stam{text-align:right}
+.pc-stam-num{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--gold)}
+.stam-bar{height:5px;background:rgba(255,255,255,.08);border-radius:3px;margin-bottom:8px;overflow:hidden}
+.stam-fill{height:100%;border-radius:3px;transition:.4s}
+.pc-row{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.pc-stat{background:rgba(0,0,0,.2);border-radius:4px;padding:5px;text-align:center}
+.pc-stat .v{font-size:15px;font-weight:700;color:var(--gold)}
+.pc-stat .k{font-size:9px;color:var(--muted)}
 
-#log{
-    height:400px;
-    overflow-y:auto;
-    background:black;
-    padding:10px;
-}
+/* ORDER */
+.order-item{display:grid;grid-template-columns:18px 1fr auto auto;gap:5px;align-items:center;padding:5px 8px;border-radius:5px;font-size:12px;transition:.15s;border:1px solid transparent}
+.order-item:hover{background:rgba(255,255,255,.04)}
+.order-item.cur{background:rgba(232,184,75,.12);border-color:rgba(232,184,75,.3)}
+.oi-idx{font-size:10px;color:var(--muted);text-align:right}
+.oi-pos{font-size:10px;color:var(--muted);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px}
+.oi-avg{font-size:10px;color:var(--muted)}
+
+/* ACTIONS */
+.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.act-btn{padding:9px 6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text);border-radius:6px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:12px;transition:.15s;line-height:1.3}
+.act-btn:hover:not(:disabled){background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
+.act-btn:active:not(:disabled){transform:scale(.97)}
+.act-btn:disabled{opacity:.3;cursor:not-allowed}
+.act-btn.prim{background:rgba(232,184,75,.15);border-color:var(--gold);color:var(--gold)}
+.act-btn.prim:hover:not(:disabled){background:rgba(232,184,75,.28)}
+.act-btn.danger{background:rgba(200,50,50,.15);border-color:#c04040;color:#e07070}
+.act-btn.danger:hover:not(:disabled){background:rgba(200,50,50,.28)}
+.act-btn.full{grid-column:1/-1}
+
+/* FOOTER */
+#ftr{background:var(--panel);border-top:1px solid var(--border);padding:6px 14px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);flex-shrink:0}
+
+/* MODAL */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:.25s}
+#modal.show{opacity:1;pointer-events:all}
+.modal-box{background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:28px 24px;max-width:340px;width:92%;text-align:center;transform:scale(.9);transition:.25s}
+#modal.show .modal-box{transform:scale(1)}
+.modal-icon{font-size:46px;margin-bottom:8px}
+.modal-title{font-family:'Bebas Neue',cursive;font-size:34px;color:var(--gold);margin-bottom:6px}
+.modal-desc{font-size:13px;color:var(--muted);line-height:1.7;white-space:pre-line;margin-bottom:18px}
+.modal-btn{padding:10px 30px;background:var(--gold);color:#111;border:none;border-radius:6px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.modal-btn:hover{background:var(--gold2)}
+
+/* PITCHER SELECT MODAL */
+#p-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:.25s}
+#p-modal.show{opacity:1;pointer-events:all}
+.pm-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:320px;width:92%}
+.pm-title{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--gold);margin-bottom:14px}
+.pm-item{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 10px;border-radius:6px;border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:.15s}
+.pm-item:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)}
+.pm-item.disabled{opacity:.3;cursor:not-allowed}
+.pm-name{font-size:14px;font-weight:500}
+.pm-stam{font-size:12px;color:var(--muted)}
+.pm-btn{padding:4px 10px;background:var(--gold);color:#111;border:none;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer}
+.pm-cancel{width:100%;margin-top:8px;padding:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:12px}
+.pm-cancel:hover{background:rgba(255,255,255,.08)}
 </style>
 </head>
 <body>
 
-<h1>야구 감독 시뮬레이터</h1>
+<div id="wrap">
+  <!-- HEADER -->
+  <div id="hdr">
+    <h1>⚾ 감독님</h1>
+    <div class="scoreboard">
+      <div class="sb-team">
+        <div class="sb-name">서울 불새</div>
+        <div class="sb-score" id="my-score">0</div>
+      </div>
+      <div>
+        <div class="sb-sep" style="text-align:center">:</div>
+        <div class="inn-box">
+          <span class="inn-num"><span id="inn-arrow">▲</span><span id="inn-num">1</span></span>
+          <span class="inn-lbl">이닝</span>
+        </div>
+      </div>
+      <div class="sb-team">
+        <div class="sb-name">부산 해룡</div>
+        <div class="sb-score" id="opp-score">0</div>
+      </div>
+    </div>
+    <div class="count-box">
+      <div class="cb-group">
+        <div class="cb-lbl">볼</div>
+        <div class="cb-dots" id="dots-ball"></div>
+      </div>
+      <div class="cb-group">
+        <div class="cb-lbl">스트라이크</div>
+        <div class="cb-dots" id="dots-strike"></div>
+      </div>
+      <div class="cb-group">
+        <div class="cb-lbl">아웃</div>
+        <div class="cb-dots" id="dots-out"></div>
+      </div>
+    </div>
+  </div>
 
-<button onclick="playGame()">경기 시작</button>
+  <!-- MAIN -->
+  <div id="main">
 
-<h2 id="score">0 : 0</h2>
+    <!-- FIELD -->
+    <div id="field">
+      <svg id="diamond-svg" viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg">
+        <!-- outfield -->
+        <path d="M150,230 L10,100 Q150,5 290,100 Z" fill="#1e5a1e"/>
+        <!-- infield dirt -->
+        <path d="M150,190 L80,120 L150,80 L220,120 Z" fill="#7a5030"/>
+        <!-- infield grass -->
+        <path d="M150,178 L88,120 L150,88 L212,120 Z" fill="#246030"/>
+        <!-- foul lines -->
+        <line x1="150" y1="230" x2="10" y2="100" stroke="white" stroke-width="1" opacity=".3"/>
+        <line x1="150" y1="230" x2="290" y2="100" stroke="white" stroke-width="1" opacity=".3"/>
+        <!-- pitcher mound -->
+        <circle cx="150" cy="140" r="10" fill="#8b6030"/>
+        <circle cx="150" cy="140" r="3" fill="#b07040"/>
+        <!-- bases -->
+        <rect id="b1" x="210" y="112" width="14" height="14" rx="2" fill="#e8e0c0"/>
+        <rect id="b2" x="143" y="70"  width="14" height="14" rx="2" fill="#e8e0c0"/>
+        <rect id="b3" x="76"  y="112" width="14" height="14" rx="2" fill="#e8e0c0"/>
+        <!-- home plate -->
+        <polygon points="150,228 143,218 143,210 157,210 157,218" fill="#e8e0c0"/>
+        <!-- runner circles -->
+        <circle id="r1" cx="217" cy="105" r="9" fill="none" stroke="#e8b84b" stroke-width="2.5" opacity="0"/>
+        <circle id="r2" cx="150" cy="63"  r="9" fill="none" stroke="#e8b84b" stroke-width="2.5" opacity="0"/>
+        <circle id="r3" cx="83"  cy="105" r="9" fill="none" stroke="#e8b84b" stroke-width="2.5" opacity="0"/>
+        <!-- outfield labels -->
+        <text x="60"  y="52" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.25)">좌익수</text>
+        <text x="150" y="38" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.25)">중견수</text>
+        <text x="240" y="52" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.25)">우익수</text>
+        <text x="150" y="138" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.3)">P</text>
+      </svg>
 
-<div class="container">
+      <!-- BATTER CARD -->
+      <div class="batter-card">
+        <div class="bc-title">현재 타자</div>
+        <div class="bc-name" id="bat-name">---</div>
+        <div class="bc-stats">
+          <div class="bcs"><div class="v" id="bat-avg">.000</div><div class="k">타율</div></div>
+          <div class="bcs"><div class="v" id="bat-hr">0</div><div class="k">홈런</div></div>
+          <div class="bcs"><div class="v" id="bat-rbi">0</div><div class="k">타점</div></div>
+          <div class="bcs"><div class="v" id="bat-con">-</div><div class="k">컨택</div></div>
+          <div class="bcs"><div class="v" id="bat-pow">-</div><div class="k">파워</div></div>
+        </div>
+      </div>
 
-<div class="panel">
-<h3>선수단</h3>
+      <!-- LOG -->
+      <div class="log-box" id="log-box">
+        <div class="log-line ln">⚾ 경기 시작! 감독님 파이팅!</div>
+      </div>
+    </div>
 
-<table>
-<thead>
-<tr>
-<th>이름</th>
-<th>타격</th>
-<th>출루</th>
-<th>장타</th>
-<th>안타</th>
-<th>홈런</th>
-</tr>
-</thead>
+    <!-- PANEL -->
+    <div id="panel">
+      <!-- PITCHER -->
+      <div class="sec">
+        <div class="sec-title">선발 투수</div>
+        <div class="pc-top">
+          <div>
+            <div class="pc-name" id="p-name">---</div>
+            <div class="pc-era" id="p-era">평균자책 0.00</div>
+          </div>
+          <div class="pc-stam">
+            <div style="font-size:9px;color:var(--muted)">구위</div>
+            <div class="pc-stam-num" id="p-stam-num">100%</div>
+          </div>
+        </div>
+        <div class="stam-bar"><div class="stam-fill" id="p-stam-bar" style="width:100%;background:var(--gold)"></div></div>
+        <div class="pc-row">
+          <div class="pc-stat"><div class="v" id="p-wins">0</div><div class="k">승</div></div>
+          <div class="pc-stat"><div class="v" id="p-k">0</div><div class="k">탈삼진</div></div>
+          <div class="pc-stat"><div class="v" id="p-pitches">0</div><div class="k">투구수</div></div>
+        </div>
+      </div>
 
-<tbody id="roster"></tbody>
-</table>
+      <!-- ORDER -->
+      <div class="sec" style="flex:1">
+        <div class="sec-title">타순</div>
+        <div id="order-list"></div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="sec">
+        <div class="sec-title">감독 지시</div>
+        <div class="act-grid">
+          <button class="act-btn prim"   id="btn-swing"   onclick="doAction('swing')">🏏 풀스윙</button>
+          <button class="act-btn"        id="btn-contact" onclick="doAction('contact')">🎯 컨택</button>
+          <button class="act-btn"        id="btn-bunt"    onclick="doAction('bunt')">📋 번트</button>
+          <button class="act-btn"        id="btn-steal"   onclick="doAction('steal')">💨 도루</button>
+          <button class="act-btn"        id="btn-wait"    onclick="doAction('wait')">👁️ 기다려</button>
+          <button class="act-btn"        id="btn-hitrun"  onclick="doAction('hitrun')">🏃 히트앤런</button>
+          <button class="act-btn danger full" id="btn-change" onclick="openPitcherModal()">🔄 투수 교체</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="ftr">
+    <span id="ftr-status">감독님의 지시를 기다립니다</span>
+    <span id="ftr-score">서울 0 - 0 부산</span>
+  </div>
 </div>
 
-<div class="panel">
-<h3>경기 로그</h3>
-<div id="log"></div>
+<!-- GAME OVER MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <div class="modal-icon" id="m-icon">🏆</div>
+    <div class="modal-title" id="m-title">승리!</div>
+    <div class="modal-desc" id="m-desc"></div>
+    <button class="modal-btn" onclick="restartGame()">다시 시작</button>
+  </div>
 </div>
 
+<!-- PITCHER SELECT MODAL -->
+<div id="p-modal">
+  <div class="pm-box">
+    <div class="pm-title">🔄 투수 교체</div>
+    <div id="pm-list"></div>
+    <button class="pm-cancel" onclick="closePitcherModal()">취소</button>
+  </div>
 </div>
 
 <script>
-
-const names = [
-"김민수","박지훈","이준호",
-"최도윤","정우진","강현우",
-"한서준","윤지호","송예찬"
+// ── DATA ──────────────────────────────────────────
+var ROSTER = [
+  {name:'서민호', pos:'DH', avg:.320, hr:25, rbi:90,  contact:85, power:88, speed:45},
+  {name:'김민준', pos:'1B', avg:.312, hr:18, rbi:72,  contact:82, power:75, speed:55},
+  {name:'최하늘', pos:'LF', avg:.301, hr:15, rbi:65,  contact:80, power:72, speed:70},
+  {name:'강다솔', pos:'RF', avg:.290, hr:20, rbi:78,  contact:76, power:80, speed:62},
+  {name:'이태양', pos:'SS', avg:.289, hr:8,  rbi:48,  contact:78, power:55, speed:80},
+  {name:'박도현', pos:'3B', avg:.275, hr:22, rbi:80,  contact:70, power:85, speed:50},
+  {name:'윤재원', pos:'2B', avg:.255, hr:3,  rbi:35,  contact:75, power:42, speed:82},
+  {name:'한지호', pos:'C',  avg:.248, hr:10, rbi:55,  contact:68, power:65, speed:40},
+  {name:'정우진', pos:'CF', avg:.265, hr:5,  rbi:40,  contact:72, power:48, speed:88},
 ];
 
-let team = [];
+var PITCHERS_BASE = [
+  {name:'류강산', wins:14, era:3.12, stuff:92},
+  {name:'임철수', wins:9,  era:4.21, stuff:80},
+  {name:'조용민', wins:6,  era:3.88, stuff:85},
+  {name:'황준혁', wins:3,  era:5.10, stuff:72},
+];
 
-function createPlayers(){
+// ── STATE ─────────────────────────────────────────
+var G = {};
 
-team=[];
-
-for(let i=0;i<9;i++){
-
-team.push({
-name:names[i],
-hit:50+Math.floor(Math.random()*50),
-obp:50+Math.floor(Math.random()*50),
-power:50+Math.floor(Math.random()*50),
-
-hits:0,
-hr:0,
-ab:0
-});
-
+function initState() {
+  G = {
+    myScore: 0,
+    oppScore: 0,
+    inning: 1,
+    isTop: true,       // true = 내팀 공격
+    balls: 0,
+    strikes: 0,
+    outs: 0,
+    runners: [false, false, false], // 1루,2루,3루
+    batterIdx: 0,
+    pitcherIdx: 0,
+    pitchers: PITCHERS_BASE.map(function(p) {
+      return {name:p.name, wins:p.wins, era:p.era, stuff:p.stuff, stamina:100, strikeouts:0, pitches:0, used:false};
+    }),
+    roster: ROSTER.map(function(p) { return Object.assign({}, p); }),
+    logs: [{msg:'⚾ 경기 시작! 감독님 파이팅!', cls:'ln'}],
+    gameOver: false,
+    locked: false,
+    totalHits: 0,
+    totalWalks: 0,
+  };
+  G.pitchers[0].used = true;
 }
 
-renderRoster();
+// ── HELPERS ───────────────────────────────────────
+function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pct(n) { return Math.random() * 100 < n; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
+function addLog(msg, cls) {
+  cls = cls || 'ln';
+  G.logs.unshift({msg: msg, cls: cls});
+  if (G.logs.length > 40) G.logs.pop();
 }
 
-function renderRoster(){
+// ── RENDER ────────────────────────────────────────
+function renderAll() {
+  // scores
+  document.getElementById('my-score').textContent  = G.myScore;
+  document.getElementById('opp-score').textContent = G.oppScore;
 
-let html="";
+  // inning
+  document.getElementById('inn-arrow').textContent = G.isTop ? '▲' : '▽';
+  document.getElementById('inn-num').textContent   = G.inning;
 
-team.forEach(p=>{
+  // count dots
+  renderDots('dots-ball',   G.balls,   3, 'ball');
+  renderDots('dots-strike', G.strikes, 2, 'strike');
+  renderDots('dots-out',    G.outs,    3, 'out');
 
-html+=`
-<tr>
-<td>${p.name}</td>
-<td>${p.hit}</td>
-<td>${p.obp}</td>
-<td>${p.power}</td>
-<td>${p.hits}</td>
-<td>${p.hr}</td>
-</tr>
-`;
+  // runners
+  ['r1','r2','r3'].forEach(function(id, i) {
+    document.getElementById(id).style.opacity = G.runners[i] ? '1' : '0';
+  });
 
-});
+  // batter card
+  var b = G.roster[G.batterIdx];
+  document.getElementById('bat-name').textContent = '#' + (G.batterIdx + 1) + ' ' + b.name;
+  document.getElementById('bat-avg').textContent  = fmtAvg(b.avg);
+  document.getElementById('bat-hr').textContent   = b.hr;
+  document.getElementById('bat-rbi').textContent  = b.rbi;
+  document.getElementById('bat-con').textContent  = b.contact;
+  document.getElementById('bat-pow').textContent  = b.power;
 
-document.getElementById("roster").innerHTML=html;
+  // pitcher
+  var p = G.pitchers[G.pitcherIdx];
+  document.getElementById('p-name').textContent     = p.name;
+  document.getElementById('p-era').textContent      = '평균자책 ' + p.era.toFixed(2);
+  document.getElementById('p-wins').textContent     = p.wins;
+  document.getElementById('p-k').textContent        = p.strikeouts;
+  document.getElementById('p-pitches').textContent  = p.pitches;
+  var st = Math.round(p.stamina);
+  document.getElementById('p-stam-num').textContent = st + '%';
+  var bar = document.getElementById('p-stam-bar');
+  bar.style.width = st + '%';
+  bar.style.background = st > 60 ? 'var(--gold)' : st > 30 ? '#d08030' : '#c04040';
 
+  // order list
+  var html = '';
+  G.roster.forEach(function(r, i) {
+    html += '<div class="order-item' + (i === G.batterIdx ? ' cur' : '') + '">' +
+      '<span class="oi-idx">' + (i+1) + '</span>' +
+      '<span>' + r.name + '</span>' +
+      '<span class="oi-pos">' + r.pos + '</span>' +
+      '<span class="oi-avg">' + fmtAvg(r.avg) + '</span>' +
+      '</div>';
+  });
+  document.getElementById('order-list').innerHTML = html;
+
+  // log
+  var logHtml = '';
+  G.logs.forEach(function(l) {
+    logHtml += '<div class="log-line ' + l.cls + '">' + l.msg + '</div>';
+  });
+  document.getElementById('log-box').innerHTML = logHtml;
+
+  // footer
+  document.getElementById('ftr-score').textContent =
+    '서울 ' + G.myScore + ' - ' + G.oppScore + ' 부산';
+
+  // pitcher warn
+  if (p.stamina <= 25 && !G.locked) {
+    document.getElementById('ftr-status').textContent =
+      '⚠️ ' + p.name + ' 구위 저하! 교체를 고려하세요';
+  } else if (!G.locked) {
+    document.getElementById('ftr-status').textContent =
+      G.inning + '회 ' + (G.isTop ? '초' : '말') + ' — ' + p.name + ' 투구중';
+  }
+
+  // buttons
+  var lock = G.locked || G.gameOver || !G.isTop;
+  ['swing','contact','bunt','steal','wait','hitrun','change'].forEach(function(id) {
+    var btn = document.getElementById('btn-' + id);
+    if (btn) btn.disabled = lock;
+  });
 }
 
-function log(text){
-
-const div=document.getElementById("log");
-
-div.innerHTML+=text+"<br>";
-
-div.scrollTop=div.scrollHeight;
-
+function renderDots(id, count, max, cls) {
+  var el = document.getElementById(id);
+  var html = '';
+  for (var i = 0; i < max; i++) {
+    html += '<div class="dot ' + cls + (i < count ? ' on' : '') + '"></div>';
+  }
+  el.innerHTML = html;
 }
 
-function atBat(player){
-
-player.ab++;
-
-let r=Math.random()*100;
-
-if(r<player.power*0.08){
-
-player.hr++;
-player.hits++;
-
-return "HR";
-
+function fmtAvg(n) {
+  return '.' + String(Math.round(n * 1000)).padStart(3, '0');
 }
 
-if(r<player.hit){
+// ── GAME LOGIC ────────────────────────────────────
+function doAction(type) {
+  if (G.locked || G.gameOver || !G.isTop) return;
+  G.locked = true;
+  document.getElementById('ftr-status').textContent = '...';
 
-player.hits++;
-
-return "H";
-
+  setTimeout(function() {
+    resolveAtBat(type);
+    renderAll();
+  }, 200);
 }
 
-return "OUT";
+function resolveAtBat(type) {
+  var bat = G.roster[G.batterIdx];
+  var pit = G.pitchers[G.pitcherIdx];
 
+  // pitcher uses energy
+  pit.pitches++;
+  var decay = rnd(1, 4) + (pit.pitches > 80 ? 2 : 0);
+  pit.stamina = Math.max(0, pit.stamina - decay);
+
+  var stuffMod = pit.stamina / 100; // 0~1
+
+  if (type === 'steal') { doSteal(); return; }
+  if (type === 'bunt')  { doBunt();  return; }
+
+  var result = calcResult(type, bat, stuffMod);
+  applyResult(result, bat, pit);
 }
 
-function playGame(){
+function calcResult(type, bat, stuffMod) {
+  var r = Math.random();
 
-document.getElementById("log").innerHTML="";
+  if (type === 'swing') {
+    var hitRate = (bat.avg + (bat.power - 70) * 0.001) * stuffMod;
+    if (r < hitRate * 0.5)  return 'hit_swing';
+    if (r < hitRate * 0.7)  return 'out_fly';
+    if (r < hitRate * 0.85) return 'out_ground';
+    if (r < hitRate * 0.92) return 'foul';
+    return 'strikeout';
+  }
 
-let score=0;
+  if (type === 'contact') {
+    var hitRate2 = (bat.avg + (bat.contact - 70) * 0.001) * stuffMod;
+    if (r < hitRate2 * 0.58) return 'hit_contact';
+    if (r < hitRate2 * 0.75) return 'out_ground';
+    if (r < hitRate2 * 0.86) return 'out_fly';
+    if (r < hitRate2 * 0.93) return 'foul';
+    return 'strikeout';
+  }
 
-let batter=0;
+  if (type === 'wait') {
+    var ballRate = (1 - stuffMod) * 0.6 + 0.25;
+    if (r < ballRate) return 'ball';
+    if (r < ballRate + 0.35) return 'called_strike';
+    if (r < ballRate + 0.50) return 'foul';
+    return 'strikeout';
+  }
 
-for(let inning=1;inning<=9;inning++){
+  if (type === 'hitrun') {
+    // advance runners first, then contact swing
+    advanceRunnersHitRun();
+    var hitRate3 = (bat.avg + (bat.contact - 70) * 0.001) * stuffMod * 1.05;
+    if (r < hitRate3 * 0.52) return 'hit_contact';
+    if (r < hitRate3 * 0.72) return 'out_ground';
+    if (r < hitRate3 * 0.84) return 'out_fly';
+    return 'strikeout';
+  }
 
-let outs=0;
-
-let runners=[false,false,false];
-
-log(`<b>${inning}회 시작</b>`);
-
-while(outs<3){
-
-let p=team[batter];
-
-let result=atBat(p);
-
-if(result==="OUT"){
-
-outs++;
-
-log(`${p.name} 아웃 (${outs}아웃)`);
-
-}else if(result==="H"){
-
-let runs=0;
-
-if(runners[2]){
-runs++;
-runners[2]=false;
+  return 'ball';
 }
 
-runners[2]=runners[1];
-runners[1]=runners[0];
-runners[0]=true;
-
-score+=runs;
-
-log(`${p.name} 안타`);
-
-if(runs>0){
-log(`${runs}점 득점`);
+function advanceRunnersHitRun() {
+  // runners advance one base
+  if (G.runners[1]) { G.runners[2] = true; G.runners[1] = false; }
+  if (G.runners[0]) { G.runners[1] = true; G.runners[0] = false; }
 }
 
-}else{
-
-let runs=1;
-
-for(let i=0;i<3;i++){
-
-if(runners[i]) runs++;
-
+function applyResult(result, bat, pit) {
+  if (result === 'hit_swing') {
+    var rand = Math.random();
+    var powerRatio = bat.power / 100;
+    if (rand < powerRatio * 0.25) { processHit('hr',  bat); }
+    else if (rand < 0.2)          { processHit('3b',  bat); }
+    else if (rand < 0.45)         { processHit('2b',  bat); }
+    else                          { processHit('1b',  bat); }
+    return;
+  }
+  if (result === 'hit_contact') {
+    var rand2 = Math.random();
+    if (rand2 < 0.08)   { processHit('2b', bat); }
+    else                { processHit('1b', bat); }
+    return;
+  }
+  if (result === 'out_fly') {
+    addLog('🌬️ ' + bat.name + ' 플라이 아웃', 'lb');
+    addOut();
+    return;
+  }
+  if (result === 'out_ground') {
+    if (G.runners[0] && G.outs < 2) {
+      addLog('⚡ ' + bat.name + ' 병살타!', 'lb');
+      G.runners[0] = false;
+      addOut();
+      if (!G.gameOver) addOut();
+    } else {
+      addLog('⬇️ ' + bat.name + ' 내야 땅볼 아웃', 'lb');
+      addOut();
+    }
+    return;
+  }
+  if (result === 'strikeout') {
+    pit.strikeouts++;
+    addLog('❌ ' + bat.name + ' 삼진 아웃!', 'lb');
+    addOut();
+    return;
+  }
+  if (result === 'foul') {
+    if (G.strikes < 2) G.strikes++;
+    addLog('📌 파울볼 (' + G.strikes + '스트라이크)', 'ln');
+    G.locked = false;
+    return;
+  }
+  if (result === 'ball') {
+    G.balls++;
+    if (G.balls >= 4) {
+      processWalk(bat);
+    } else {
+      addLog('⚪ 볼 (' + G.balls + '볼)', 'ln');
+      G.locked = false;
+    }
+    return;
+  }
+  if (result === 'called_strike') {
+    G.strikes++;
+    if (G.strikes >= 3) {
+      pit.strikeouts++;
+      addLog('🎳 ' + bat.name + ' 낫아웃 삼진!', 'lb');
+      addOut();
+    } else {
+      addLog('🎳 스트라이크! (' + G.balls + '볼 ' + G.strikes + '스)', 'ln');
+      G.locked = false;
+    }
+    return;
+  }
 }
 
-score+=runs;
-
-runners=[false,false,false];
-
-log(`💥 ${p.name} 홈런 (+${runs}점)`);
-
+function processHit(type, bat) {
+  G.totalHits++;
+  G.locked = false;
+  if (type === 'hr') {
+    var scored = 1 + G.runners.filter(Boolean).length;
+    G.myScore += scored;
+    G.runners = [false, false, false];
+    addLog('💥 ' + bat.name + ' 홈런! ' + scored + '점 득점!', 'lh');
+    nextBatter();
+    return;
+  }
+  if (type === '3b') {
+    var s3 = countScore(2); G.myScore += s3;
+    G.runners = [false, false, true];
+    addLog('🏃 ' + bat.name + ' 3루타!' + (s3 > 0 ? ' ' + s3 + '점!' : ''), 'lg');
+    nextBatter();
+    return;
+  }
+  if (type === '2b') {
+    var s2 = countScore(1); G.myScore += s2;
+    var was1 = G.runners[0];
+    G.runners[2] = G.runners[1];
+    G.runners[1] = true;
+    G.runners[0] = false;
+    if (was1) { G.myScore += 1; }
+    addLog('🎯 ' + bat.name + ' 2루타!' + (s2 + (was1?1:0) > 0 ? ' ' + (s2+(was1?1:0)) + '점!' : ''), 'lg');
+    nextBatter();
+    return;
+  }
+  if (type === '1b') {
+    var scored1 = 0;
+    if (G.runners[2]) scored1++;
+    G.runners[2] = G.runners[1];
+    G.runners[1] = G.runners[0];
+    G.runners[0] = true;
+    G.myScore += scored1;
+    addLog('✅ ' + bat.name + ' 안타!' + (scored1 > 0 ? ' ' + scored1 + '점!' : ''), 'lg');
+    nextBatter();
+    return;
+  }
 }
 
-batter++;
-
-if(batter>=9) batter=0;
-
+function countScore(fromBase) {
+  // fromBase: 루에서 홈으로 올 수 있는 주자 수 (2=3루주자만, 1=2루+3루)
+  var s = 0;
+  for (var i = fromBase; i < 3; i++) {
+    if (G.runners[i]) { s++; G.runners[i] = false; }
+  }
+  return s;
 }
 
+function processWalk(bat) {
+  G.totalWalks++;
+  // 만루 → 득점
+  if (G.runners[0] && G.runners[1] && G.runners[2]) {
+    G.myScore++;
+    addLog('🚶 ' + bat.name + ' 볼넷! 밀어내기 1점!', 'lg');
+  } else {
+    if (G.runners[0] && G.runners[1]) G.runners[2] = true;
+    else if (G.runners[0])            G.runners[1] = true;
+    G.runners[0] = true;
+    addLog('🚶 ' + bat.name + ' 볼넷 출루', 'ln');
+  }
+  G.balls = 0; G.strikes = 0;
+  G.locked = false;
+  nextBatter();
 }
 
-document.getElementById("score").innerText=
-`${score} : 상대팀 ${Math.floor(Math.random()*10)}`;
-
-renderRoster();
-
+function doSteal() {
+  var fromBase = -1;
+  for (var i = 0; i < 3; i++) { if (G.runners[i]) { fromBase = i; break; } }
+  if (fromBase < 0) {
+    addLog('⚠️ 루상에 주자가 없습니다', 'ln');
+    G.locked = false;
+    return;
+  }
+  if (fromBase === 2) {
+    addLog('⚠️ 3루 주자는 홈 스틸 도전!', 'ln');
+    if (pct(30)) {
+      G.myScore++;
+      G.runners[2] = false;
+      addLog('💨 홈 스틸 성공! 1점!', 'lh');
+    } else {
+      G.runners[2] = false;
+      addLog('❌ 홈 스틸 실패! 아웃!', 'lb');
+      addOut();
+      return;
+    }
+    G.locked = false;
+    return;
+  }
+  var spd = G.roster[G.batterIdx].speed;
+  var chance = 40 + spd * 0.35;
+  var labels = ['1루→2루', '2루→3루'];
+  if (pct(chance)) {
+    G.runners[fromBase] = false;
+    G.runners[fromBase + 1] = true;
+    addLog('💨 도루 성공! ' + labels[fromBase] + '!', 'lg');
+    G.locked = false;
+  } else {
+    G.runners[fromBase] = false;
+    addLog('❌ 도루 실패! ' + ['1루','2루'][fromBase] + ' 주자 아웃!', 'lb');
+    addOut();
+  }
 }
 
-createPlayers();
+function doBunt() {
+  var bat = G.roster[G.batterIdx];
+  if (pct(68)) {
+    var adv = false;
+    if (G.runners[1]) { G.runners[2] = true; G.runners[1] = false; adv = true; }
+    if (G.runners[0]) { G.runners[1] = true; G.runners[0] = false; adv = true; }
+    addLog('📋 ' + bat.name + ' 번트 성공!' + (adv ? ' 주자 진루' : ''), 'lg');
+    addOut();
+  } else {
+    addLog('📋 ' + bat.name + ' 번트 실패 — 파울아웃!', 'lb');
+    addOut();
+  }
+}
 
+function nextBatter() {
+  G.balls = 0; G.strikes = 0;
+  G.batterIdx = (G.batterIdx + 1) % 9;
+  G.locked = false;
+}
+
+function addOut() {
+  G.outs++;
+  G.locked = false;
+  if (G.outs >= 3) {
+    endHalfInning();
+  }
+}
+
+function endHalfInning() {
+  G.balls = 0; G.strikes = 0; G.outs = 0;
+  G.runners = [false, false, false];
+
+  if (G.isTop) {
+    // 우리팀 공격 끝 → 상대팀 공격
+    G.isTop = false;
+    addLog('--- ' + G.inning + '회 말 시작 (상대팀 공격) ---', 'ln');
+    renderAll();
+    runOppBatting();
+  } else {
+    // 9회 말 종료 → 게임 끝, 아니면 다음 이닝
+    if (G.inning >= 9) {
+      // 연장 미포함; 종료
+      endGame();
+      return;
+    }
+    G.inning++;
+    G.isTop = true;
+    addLog('--- ' + G.inning + '회 초 시작 ---', 'ln');
+    renderAll();
+  }
+}
+
+// ── OPP AUTO BATTING ─────────────────────────────
+function runOppBatting() {
+  G.locked = true;
+  var oppOuts = 0;
+  var oppRunners = [false, false, false];
+  var step = 0;
+
+  function nextPlay() {
+    if (oppOuts >= 3 || G.gameOver) {
+      // half inning over
+      G.locked = false;
+      G.isTop = true;
+      G.outs = 0; G.balls = 0; G.strikes = 0;
+      G.runners = [false, false, false];
+      addLog('--- ' + G.inning + '회 말 종료 ---', 'ln');
+      if (G.inning >= 9) {
+        endGame();
+      } else {
+        G.inning++;
+        addLog('--- ' + G.inning + '회 초 시작 ---', 'ln');
+        renderAll();
+      }
+      return;
+    }
+
+    step++;
+    var pit = G.pitchers[G.pitcherIdx];
+    var stuffMod = pit.stamina / 100;
+    var r = Math.random();
+
+    // determine result for opp
+    // hit chance scales inversely with our pitcher stuff
+    var baseHit = 0.26 * (1.2 - stuffMod * 0.4);
+    var result;
+    if (r < baseHit) {
+      result = 'hit';
+    } else if (r < baseHit + 0.06) {
+      result = 'walk';
+    } else {
+      result = 'out';
+    }
+
+    if (result === 'hit') {
+      var hr = Math.random() < 0.08 * (1 - stuffMod * 0.3);
+      if (hr) {
+        var scored = 1 + oppRunners.filter(Boolean).length;
+        G.oppScore += scored;
+        oppRunners = [false, false, false];
+        addLog('🔴 상대 홈런! ' + scored + '점 실점!', 'lb');
+      } else {
+        var sc2 = 0;
+        if (oppRunners[2]) { sc2++; oppRunners[2] = false; }
+        oppRunners[2] = oppRunners[1];
+        oppRunners[1] = oppRunners[0];
+        oppRunners[0] = true;
+        G.oppScore += sc2;
+        var hitTypes = ['안타', '안타', '안타', '2루타'];
+        addLog('🔴 상대 ' + pick(hitTypes) + (sc2 > 0 ? ' ' + sc2 + '점!' : ''), 'lb');
+      }
+      pit.pitches += rnd(2, 5);
+      pit.stamina = Math.max(0, pit.stamina - rnd(2, 5));
+    } else if (result === 'walk') {
+      if (oppRunners[0] && oppRunners[1] && oppRunners[2]) {
+        G.oppScore++;
+        addLog('🔴 상대 볼넷 밀어내기! 1점 실점!', 'lb');
+      } else {
+        if (oppRunners[0] && oppRunners[1]) oppRunners[2] = true;
+        else if (oppRunners[0])            oppRunners[1] = true;
+        oppRunners[0] = true;
+        addLog('⚪ 상대 볼넷 출루', 'ln');
+      }
+      pit.pitches += rnd(4, 6);
+      pit.stamina = Math.max(0, pit.stamina - rnd(1, 3));
+    } else {
+      oppOuts++;
+      var outTypes = ['땅볼 아웃', '플라이 아웃', '삼진', '삼진'];
+      addLog('✅ ' + pick(outTypes) + ' (' + oppOuts + '아웃)', 'ln');
+      pit.pitches += rnd(1, 4);
+      pit.stamina = Math.max(0, pit.stamina - rnd(1, 2));
+    }
+
+    renderAll();
+    setTimeout(nextPlay, 700);
+  }
+
+  setTimeout(nextPlay, 500);
+}
+
+// ── PITCHER MODAL ─────────────────────────────────
+function openPitcherModal() {
+  if (G.locked || G.gameOver) return;
+  var html = '';
+  G.pitchers.forEach(function(p, i) {
+    if (i === G.pitcherIdx) return;
+    var disabled = p.used && p.stamina < 10;
+    html += '<div class="pm-item' + (disabled ? ' disabled' : '') + '">' +
+      '<div><div class="pm-name">' + p.name + '</div>' +
+      '<div class="pm-stam">구위 ' + Math.round(p.stamina) + '% | ERA ' + p.era.toFixed(2) + '</div></div>' +
+      '<span class="pm-stam" style="font-size:11px">' + (p.used ? '이미등판' : '준비완료') + '</span>' +
+      (disabled ? '' : '<button class="pm-btn" onclick="changePitcher(' + i + ')">등판</button>') +
+      '</div>';
+  });
+  if (!html) html = '<div style="color:var(--muted);font-size:13px;padding:8px">더 이상 교체할 투수가 없습니다</div>';
+  document.getElementById('pm-list').innerHTML = html;
+  document.getElementById('p-modal').classList.add('show');
+}
+
+function closePitcherModal() {
+  document.getElementById('p-modal').classList.remove('show');
+}
+
+function changePitcher(idx) {
+  closePitcherModal();
+  G.pitcherIdx = idx;
+  G.pitchers[idx].used = true;
+  addLog('🔄 ' + G.pitchers[idx].name + ' 등판!', 'lh');
+  renderAll();
+}
+
+// ── GAME OVER ─────────────────────────────────────
+function endGame() {
+  G.gameOver = true;
+  G.locked = true;
+  var won  = G.myScore > G.oppScore;
+  var tied = G.myScore === G.oppScore;
+  document.getElementById('m-icon').textContent  = won ? '🏆' : tied ? '🤝' : '😔';
+  document.getElementById('m-title').textContent = won ? '승리!' : tied ? '무승부' : '패배...';
+  document.getElementById('m-desc').textContent  =
+    '최종 스코어: 서울 불새 ' + G.myScore + ' - ' + G.oppScore + ' 부산 해룡\n' +
+    '안타: ' + G.totalHits + '개  |  볼넷: ' + G.totalWalks + '개\n\n' +
+    (won ? '훌륭한 경기였습니다, 감독님!' : tied ? '아쉬운 무승부입니다.' : '내일 반드시 설욕합시다!');
+  document.getElementById('modal').classList.add('show');
+}
+
+function restartGame() {
+  document.getElementById('modal').classList.remove('show');
+  initState();
+  renderAll();
+}
+
+// ── START ─────────────────────────────────────────
+initState();
+renderAll();
 </script>
-
 </body>
 </html>

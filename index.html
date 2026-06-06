@@ -318,6 +318,13 @@ var PITCHERS_BASE = [
   {name:'황준혁', wins:3,  era:5.10, stuff:72},
 ];
 
+// 상대팀 투수 (우리 팀과 완전히 분리)
+var OPP_PITCHERS_BASE = [
+  {name:'김동원', wins:12, era:3.45, stuff:88},
+  {name:'박세훈', wins:7,  era:4.60, stuff:76},
+  {name:'최원빈', wins:4,  era:4.10, stuff:82},
+];
+
 // ── STATE ─────────────────────────────────────────
 var G = {};
 
@@ -335,6 +342,11 @@ function initState() {
     pitcherIdx: 0,
     pitchers: PITCHERS_BASE.map(function(p) {
       return {name:p.name, wins:p.wins, era:p.era, stuff:p.stuff, stamina:100, strikeouts:0, pitches:0, used:false};
+    }),
+    // 상대팀 투수 (우리 투수와 완전히 별개)
+    oppPitcherIdx: 0,
+    oppPitchers: OPP_PITCHERS_BASE.map(function(p) {
+      return {name:p.name, wins:p.wins, era:p.era, stuff:p.stuff, stamina:100, strikeouts:0, pitches:0};
     }),
     roster: ROSTER.map(function(p) { return Object.assign({}, p); }),
     logs: [{msg:'⚾ 경기 시작! 감독님 파이팅!', cls:'ln'}],
@@ -466,20 +478,18 @@ function doAction(type) {
 
 function resolveAtBat(type) {
   var bat = G.roster[G.batterIdx];
-  var pit = G.pitchers[G.pitcherIdx];
-
-  // pitcher uses energy
-  pit.pitches++;
-  var decay = rnd(1, 4) + (pit.pitches > 80 ? 2 : 0);
-  pit.stamina = Math.max(0, pit.stamina - decay);
-
-  var stuffMod = pit.stamina / 100; // 0~1
+  // 우리팀 공격 → 상대 투수가 공을 던짐
+  var oppPit = G.oppPitchers[G.oppPitcherIdx];
+  oppPit.pitches++;
+  var decay = rnd(1, 4) + (oppPit.pitches > 80 ? 2 : 0);
+  oppPit.stamina = Math.max(0, oppPit.stamina - decay);
+  var stuffMod = oppPit.stamina / 100;
 
   if (type === 'steal') { doSteal(); return; }
   if (type === 'bunt')  { doBunt();  return; }
 
   var result = calcResult(type, bat, stuffMod);
-  applyResult(result, bat, pit);
+  applyResult(result, bat);
 }
 
 function calcResult(type, bat, stuffMod) {
@@ -530,7 +540,7 @@ function advanceRunnersHitRun() {
   if (G.runners[0]) { G.runners[1] = true; G.runners[0] = false; }
 }
 
-function applyResult(result, bat, pit) {
+function applyResult(result, bat) {
   if (result === 'hit_swing') {
     var rand = Math.random();
     var powerRatio = bat.power / 100;
@@ -564,7 +574,6 @@ function applyResult(result, bat, pit) {
     return;
   }
   if (result === 'strikeout') {
-    pit.strikeouts++;
     addLog('❌ ' + bat.name + ' 삼진 아웃!', 'lb');
     addOut();
     return;
@@ -588,7 +597,6 @@ function applyResult(result, bat, pit) {
   if (result === 'called_strike') {
     G.strikes++;
     if (G.strikes >= 3) {
-      pit.strikeouts++;
       addLog('🎳 ' + bat.name + ' 낫아웃 삼진!', 'lb');
       addOut();
     } else {
@@ -719,6 +727,7 @@ function doBunt() {
   }
 }
 
+// 안타·볼넷 후 타자 교체 (아웃 후는 addOut 내부에서 처리)
 function nextBatter() {
   G.balls = 0; G.strikes = 0;
   G.batterIdx = (G.batterIdx + 1) % 9;
@@ -727,9 +736,14 @@ function nextBatter() {
 
 function addOut() {
   G.outs++;
-  G.locked = false;
   if (G.outs >= 3) {
+    // 이닝 종료 — locked는 endHalfInning/runOppBatting 에서 관리
     endHalfInning();
+  } else {
+    // 아웃 후 다음 타자로 전환
+    G.balls = 0; G.strikes = 0;
+    G.batterIdx = (G.batterIdx + 1) % 9;
+    G.locked = false;
   }
 }
 
@@ -738,20 +752,21 @@ function endHalfInning() {
   G.runners = [false, false, false];
 
   if (G.isTop) {
-    // 우리팀 공격 끝 → 상대팀 공격
+    // 우리팀 공격 끝 → 상대팀 공격(말)
     G.isTop = false;
+    G.locked = true; // 상대 공격 중 버튼 잠금
     addLog('--- ' + G.inning + '회 말 시작 (상대팀 공격) ---', 'ln');
     renderAll();
     runOppBatting();
   } else {
-    // 9회 말 종료 → 게임 끝, 아니면 다음 이닝
+    // 상대팀 공격 끝 → 다음 이닝 초 or 게임 종료
     if (G.inning >= 9) {
-      // 연장 미포함; 종료
       endGame();
       return;
     }
     G.inning++;
     G.isTop = true;
+    G.locked = false;
     addLog('--- ' + G.inning + '회 초 시작 ---', 'ln');
     renderAll();
   }
@@ -759,31 +774,17 @@ function endHalfInning() {
 
 // ── OPP AUTO BATTING ─────────────────────────────
 function runOppBatting() {
-  G.locked = true;
   var oppOuts = 0;
   var oppRunners = [false, false, false];
-  var step = 0;
 
   function nextPlay() {
     if (oppOuts >= 3 || G.gameOver) {
-      // half inning over
-      G.locked = false;
-      G.isTop = true;
-      G.outs = 0; G.balls = 0; G.strikes = 0;
-      G.runners = [false, false, false];
-      addLog('--- ' + G.inning + '회 말 종료 ---', 'ln');
-      if (G.inning >= 9) {
-        endGame();
-      } else {
-        G.inning++;
-        addLog('--- ' + G.inning + '회 초 시작 ---', 'ln');
-        renderAll();
-      }
+      // 상대 공격 끝 → endHalfInning으로 통일 처리 (isTop=false 상태)
+      endHalfInning();
       return;
     }
 
-    step++;
-    var pit = G.pitchers[G.pitcherIdx];
+    var pit = G.pitchers[G.pitcherIdx];  // 상대 공격 시 우리 투수가 던짐 (올바름)
     var stuffMod = pit.stamina / 100;
     var r = Math.random();
 
@@ -832,6 +833,7 @@ function runOppBatting() {
       pit.stamina = Math.max(0, pit.stamina - rnd(1, 3));
     } else {
       oppOuts++;
+      G.outs = oppOuts; // 헤더 아웃 표시 동기화
       var outTypes = ['땅볼 아웃', '플라이 아웃', '삼진', '삼진'];
       addLog('✅ ' + pick(outTypes) + ' (' + oppOuts + '아웃)', 'ln');
       pit.pitches += rnd(1, 4);

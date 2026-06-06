@@ -1,907 +1,202 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚾ 야구 감독 시뮬레이션</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0d1520;
-  --panel:#111c28;
-  --panel2:#162030;
-  --border:#1e2d3d;
-  --gold:#e8b84b;
-  --gold2:#f0cc6a;
-  --text:#dde6f0;
-  --muted:#5a7080;
-  --green:#2a6e3a;
-  --green2:#1e5a2a;
-  --dirt:#7a5030;
-  --red:#c03030;
-  --blue:#2a5090;
-}
-html,body{height:100%;font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
-.bebas{font-family:'Bebas Neue',cursive;letter-spacing:1px}
-
-/* ── LAYOUT ── */
-#wrap{display:flex;flex-direction:column;height:100vh;max-width:1000px;margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border)}
-
-/* HEADER */
-#hdr{background:var(--panel);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0}
-#hdr h1{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--gold);margin-right:auto}
-.scoreboard{display:flex;align-items:center;gap:10px}
-.sb-team{text-align:center}
-.sb-name{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.sb-score{font-family:'Bebas Neue',cursive;font-size:34px;line-height:1;color:#fff}
-.sb-sep{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--muted)}
-.inn-box{text-align:center;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:4px 10px}
-.inn-num{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--gold);display:block}
-.inn-lbl{font-size:9px;color:var(--muted)}
-.count-box{display:flex;gap:10px}
-.cb-group{display:flex;flex-direction:column;gap:3px}
-.cb-lbl{font-size:9px;color:var(--muted);text-align:center}
-.cb-dots{display:flex;gap:3px}
-.dot{width:11px;height:11px;border-radius:50%;border:1.5px solid;transition:.2s}
-.dot.ball{border-color:#4a9a4a}.dot.ball.on{background:#4a9a4a}
-.dot.strike{border-color:var(--gold)}.dot.strike.on{background:var(--gold)}
-.dot.out{border-color:#c04040}.dot.out.on{background:#c04040}
-
-/* MAIN */
-#main{display:flex;flex:1;overflow:hidden}
-
-/* FIELD */
-#field{background:var(--green2);flex:1;display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px;overflow-y:auto}
-#field svg{width:100%;max-width:300px;flex-shrink:0}
-.batter-card{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;width:100%;max-width:300px}
-.bc-title{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-.bc-name{font-family:'Bebas Neue',cursive;font-size:22px;color:#fff;margin-bottom:6px}
-.bc-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
-.bcs{background:rgba(255,255,255,.05);border-radius:4px;padding:4px;text-align:center}
-.bcs .v{font-size:13px;font-weight:700;color:var(--gold)}
-.bcs .k{font-size:9px;color:var(--muted)}
-.log-box{background:rgba(0,0,0,.35);border-radius:8px;padding:8px 10px;width:100%;max-width:300px;overflow-y:auto;flex:1;min-height:100px;max-height:180px}
-.log-line{font-size:12px;line-height:1.7;border-bottom:1px solid rgba(255,255,255,.04);padding:1px 0}
-.log-line:last-child{border:none}
-.lg{color:#6dc66d}.lb{color:#e06060}.ln{color:var(--muted)}.lh{color:var(--gold)}
-
-/* PANEL */
-#panel{width:270px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
-.sec{padding:12px;border-bottom:1px solid var(--border)}
-.sec-title{font-family:'Bebas Neue',cursive;font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:8px}
-
-/* PITCHER CARD */
-.pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
-.pc-name{font-family:'Bebas Neue',cursive;font-size:20px;color:#fff}
-.pc-era{font-size:10px;color:var(--muted);margin-top:1px}
-.pc-stam{text-align:right}
-.pc-stam-num{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--gold)}
-.stam-bar{height:5px;background:rgba(255,255,255,.08);border-radius:3px;margin-bottom:8px;overflow:hidden}
-.stam-fill{height:100%;border-radius:3px;transition:.4s}
-.pc-row{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-.pc-stat{background:rgba(0,0,0,.2);border-radius:4px;padding:5px;text-align:center}
-.pc-stat .v{font-size:15px;font-weight:700;color:var(--gold)}
-.pc-stat .k{font-size:9px;color:var(--muted)}
-
-/* ORDER */
-.order-item{display:grid;grid-template-columns:18px 1fr auto auto;gap:5px;align-items:center;padding:5px 8px;border-radius:5px;font-size:12px;transition:.15s;border:1px solid transparent}
-.order-item:hover{background:rgba(255,255,255,.04)}
-.order-item.cur{background:rgba(232,184,75,.12);border-color:rgba(232,184,75,.3)}
-.oi-idx{font-size:10px;color:var(--muted);text-align:right}
-.oi-pos{font-size:10px;color:var(--muted);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px}
-.oi-avg{font-size:10px;color:var(--muted)}
-
-/* ACTIONS */
-.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.act-btn{padding:9px 6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text);border-radius:6px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:12px;transition:.15s;line-height:1.3}
-.act-btn:hover:not(:disabled){background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
-.act-btn:active:not(:disabled){transform:scale(.97)}
-.act-btn:disabled{opacity:.3;cursor:not-allowed}
-.act-btn.prim{background:rgba(232,184,75,.15);border-color:var(--gold);color:var(--gold)}
-.act-btn.prim:hover:not(:disabled){background:rgba(232,184,75,.28)}
-.act-btn.danger{background:rgba(200,50,50,.15);border-color:#c04040;color:#e07070}
-.act-btn.danger:hover:not(:disabled){background:rgba(200,50,50,.28)}
-.act-btn.full{grid-column:1/-1}
-
-/* FOOTER */
-#ftr{background:var(--panel);border-top:1px solid var(--border);padding:6px 14px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);flex-shrink:0}
-
-/* MODAL */
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:.25s}
-#modal.show{opacity:1;pointer-events:all}
-.modal-box{background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:28px 24px;max-width:340px;width:92%;text-align:center;transform:scale(.9);transition:.25s}
-#modal.show .modal-box{transform:scale(1)}
-.modal-icon{font-size:46px;margin-bottom:8px}
-.modal-title{font-family:'Bebas Neue',cursive;font-size:34px;color:var(--gold);margin-bottom:6px}
-.modal-desc{font-size:13px;color:var(--muted);line-height:1.7;white-space:pre-line;margin-bottom:18px}
-.modal-btn{padding:10px 30px;background:var(--gold);color:#111;border:none;border-radius:6px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
-.modal-btn:hover{background:var(--gold2)}
-
-/* PITCHER SELECT MODAL */
-#p-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:.25s}
-#p-modal.show{opacity:1;pointer-events:all}
-.pm-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:320px;width:92%}
-.pm-title{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--gold);margin-bottom:14px}
-.pm-item{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 10px;border-radius:6px;border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:.15s}
-.pm-item:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)}
-.pm-item.disabled{opacity:.3;cursor:not-allowed}
-.pm-name{font-size:14px;font-weight:500}
-.pm-stam{font-size:12px;color:var(--muted)}
-.pm-btn{padding:4px 10px;background:var(--gold);color:#111;border:none;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer}
-.pm-cancel{width:100%;margin-top:8px;padding:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:12px}
-.pm-cancel:hover{background:rgba(255,255,255,.08)}
-</style>
-</head>
-<body>
-
-<div id="wrap">
-  <!-- HEADER -->
-  <div id="hdr">
-    <h1>⚾ 감독님</h1>
-    <div class="scoreboard">
-      <div class="sb-team">
-        <div class="sb-name">서울 불새</div>
-        <div class="sb-score" id="my-score">0</div>
-      </div>
-      <div>
-        <div class="sb-sep" style="text-align:center">:</div>
-        <div class="inn-box">
-          <span class="inn-num"><span id="inn-arrow">▲</span><span id="inn-num">1</span></span>
-          <span class="inn-lbl">이닝</span>
-        </div>
-      </div>
-      <div class="sb-team">
-        <div class="sb-name">부산 해룡</div>
-        <div class="sb-score" id="opp-score">0</div>
-      </div>
-    </div>
-    <div class="count-box">
-      <div class="cb-group">
-        <div class="cb-lbl">볼</div>
-        <div class="cb-dots" id="dots-ball"></div>
-      </div>
-      <div class="cb-group">
-        <div class="cb-lbl">스트라이크</div>
-        <div class="cb-dots" id="dots-strike"></div>
-      </div>
-      <div class="cb-group">
-        <div class="cb-lbl">아웃</div>
-        <div class="cb-dots" id="dots-out"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MAIN -->
-  <div id="main">
-
-    <!-- FIELD -->
-    <div id="field">
-      <svg id="diamond-svg" viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg">
-        <!-- outfield -->
-        <path d="M150,230 L10,100 Q150,5 290,100 Z" fill="#1e5a1e"/>
-        <!-- infield dirt -->
-        <path d="M150,190 L80,120 L150,80 L220,120 Z" fill="#7a5030"/>
-        <!-- infield grass -->
-        <path d="M150,178 L88,120 L150,88 L212,120 Z" fill="#246030"/>
-        <!-- foul lines -->
-        <line x1="150" y1="230" x2="10" y2="100" stroke="white" stroke-width="1" opacity=".3"/>
-        <line x1="150" y1="230" x2="290" y2="100" stroke="white" stroke-width="1" opacity=".3"/>
-        <!-- pitcher mound -->
-        <circle cx="150" cy="140" r="10" fill="#8b6030"/>
-        <circle cx="150" cy="140" r="3" fill="#b07040"/>
-        <!-- bases -->
-        <rect id="b1" x="210" y="112" width="14" height="14" rx="2" fill="#e8e0c0"/>
-        <rect id="b2" x="143" y="70"  width="14" height="14" rx="2" fill="#e8e0c0"/>
-        <rect id="b3" x="76"  y="112" width="14" height="14" rx="2" fill="#e8e0c0"/>
-        <!-- home plate -->
-        <polygon points="150,228 143,218 143,210 157,210 157,218" fill="#e8e0c0"/>
-        <!-- runner circles -->
-        <circle id="r1" cx="217" cy="105" r="9" fill="none" stroke="#e8b84b" stroke-width="2.5" opacity="0"/>
-        <circle id="r2" cx="150" cy="63"  r="9" fill="none" stroke="#e8b84b" stroke-width="2.5" opacity="0"/>
-        <circle id="r3" cx="83"  cy="105" r="9" fill="none" stroke="#e8b84b" stroke-width="2.5" opacity="0"/>
-        <!-- outfield labels -->
-        <text x="60"  y="52" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.25)">좌익수</text>
-        <text x="150" y="38" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.25)">중견수</text>
-        <text x="240" y="52" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.25)">우익수</text>
-        <text x="150" y="138" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.3)">P</text>
-      </svg>
-
-      <!-- BATTER CARD -->
-      <div class="batter-card">
-        <div class="bc-title">현재 타자</div>
-        <div class="bc-name" id="bat-name">---</div>
-        <div class="bc-stats">
-          <div class="bcs"><div class="v" id="bat-avg">.000</div><div class="k">타율</div></div>
-          <div class="bcs"><div class="v" id="bat-hr">0</div><div class="k">홈런</div></div>
-          <div class="bcs"><div class="v" id="bat-rbi">0</div><div class="k">타점</div></div>
-          <div class="bcs"><div class="v" id="bat-con">-</div><div class="k">컨택</div></div>
-          <div class="bcs"><div class="v" id="bat-pow">-</div><div class="k">파워</div></div>
-        </div>
-      </div>
-
-      <!-- LOG -->
-      <div class="log-box" id="log-box">
-        <div class="log-line ln">⚾ 경기 시작! 감독님 파이팅!</div>
-      </div>
-    </div>
-
-    <!-- PANEL -->
-    <div id="panel">
-      <!-- PITCHER -->
-      <div class="sec">
-        <div class="sec-title">선발 투수</div>
-        <div class="pc-top">
-          <div>
-            <div class="pc-name" id="p-name">---</div>
-            <div class="pc-era" id="p-era">평균자책 0.00</div>
-          </div>
-          <div class="pc-stam">
-            <div style="font-size:9px;color:var(--muted)">구위</div>
-            <div class="pc-stam-num" id="p-stam-num">100%</div>
-          </div>
-        </div>
-        <div class="stam-bar"><div class="stam-fill" id="p-stam-bar" style="width:100%;background:var(--gold)"></div></div>
-        <div class="pc-row">
-          <div class="pc-stat"><div class="v" id="p-wins">0</div><div class="k">승</div></div>
-          <div class="pc-stat"><div class="v" id="p-k">0</div><div class="k">탈삼진</div></div>
-          <div class="pc-stat"><div class="v" id="p-pitches">0</div><div class="k">투구수</div></div>
-        </div>
-      </div>
-
-      <!-- ORDER -->
-      <div class="sec" style="flex:1">
-        <div class="sec-title">타순</div>
-        <div id="order-list"></div>
-      </div>
-
-      <!-- ACTIONS -->
-      <div class="sec">
-        <div class="sec-title">감독 지시</div>
-        <div class="act-grid">
-          <button class="act-btn prim"   id="btn-swing"   onclick="doAction('swing')">🏏 풀스윙</button>
-          <button class="act-btn"        id="btn-contact" onclick="doAction('contact')">🎯 컨택</button>
-          <button class="act-btn"        id="btn-bunt"    onclick="doAction('bunt')">📋 번트</button>
-          <button class="act-btn"        id="btn-steal"   onclick="doAction('steal')">💨 도루</button>
-          <button class="act-btn"        id="btn-wait"    onclick="doAction('wait')">👁️ 기다려</button>
-          <button class="act-btn"        id="btn-hitrun"  onclick="doAction('hitrun')">🏃 히트앤런</button>
-          <button class="act-btn danger full" id="btn-change" onclick="openPitcherModal()">🔄 투수 교체</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <div id="ftr">
-    <span id="ftr-status">감독님의 지시를 기다립니다</span>
-    <span id="ftr-score">서울 0 - 0 부산</span>
-  </div>
-</div>
-
-<!-- GAME OVER MODAL -->
-<div id="modal">
-  <div class="modal-box">
-    <div class="modal-icon" id="m-icon">🏆</div>
-    <div class="modal-title" id="m-title">승리!</div>
-    <div class="modal-desc" id="m-desc"></div>
-    <button class="modal-btn" onclick="restartGame()">다시 시작</button>
-  </div>
-</div>
-
-<!-- PITCHER SELECT MODAL -->
-<div id="p-modal">
-  <div class="pm-box">
-    <div class="pm-title">🔄 투수 교체</div>
-    <div id="pm-list"></div>
-    <button class="pm-cancel" onclick="closePitcherModal()">취소</button>
-  </div>
-</div>
-
-<script>
-// ── DATA ──────────────────────────────────────────
-var ROSTER = [
-  {name:'서민호', pos:'DH', avg:.320, hr:25, rbi:90,  contact:85, power:88, speed:45},
-  {name:'김민준', pos:'1B', avg:.312, hr:18, rbi:72,  contact:82, power:75, speed:55},
-  {name:'최하늘', pos:'LF', avg:.301, hr:15, rbi:65,  contact:80, power:72, speed:70},
-  {name:'강다솔', pos:'RF', avg:.290, hr:20, rbi:78,  contact:76, power:80, speed:62},
-  {name:'이태양', pos:'SS', avg:.289, hr:8,  rbi:48,  contact:78, power:55, speed:80},
-  {name:'박도현', pos:'3B', avg:.275, hr:22, rbi:80,  contact:70, power:85, speed:50},
-  {name:'윤재원', pos:'2B', avg:.255, hr:3,  rbi:35,  contact:75, power:42, speed:82},
-  {name:'한지호', pos:'C',  avg:.248, hr:10, rbi:55,  contact:68, power:65, speed:40},
-  {name:'정우진', pos:'CF', avg:.265, hr:5,  rbi:40,  contact:72, power:48, speed:88},
-];
-
-var PITCHERS_BASE = [
-  {name:'류강산', wins:14, era:3.12, stuff:92},
-  {name:'임철수', wins:9,  era:4.21, stuff:80},
-  {name:'조용민', wins:6,  era:3.88, stuff:85},
-  {name:'황준혁', wins:3,  era:5.10, stuff:72},
-];
-
-// 상대팀 투수 (우리 팀과 완전히 분리)
-var OPP_PITCHERS_BASE = [
-  {name:'김동원', wins:12, era:3.45, stuff:88},
-  {name:'박세훈', wins:7,  era:4.60, stuff:76},
-  {name:'최원빈', wins:4,  era:4.10, stuff:82},
-];
-
-// ── STATE ─────────────────────────────────────────
-var G = {};
-
-function initState() {
-  G = {
-    myScore: 0,
-    oppScore: 0,
-    inning: 1,
-    isTop: true,       // true = 내팀 공격
-    balls: 0,
-    strikes: 0,
-    outs: 0,
-    runners: [false, false, false], // 1루,2루,3루
-    batterIdx: 0,
-    pitcherIdx: 0,
-    pitchers: PITCHERS_BASE.map(function(p) {
-      return {name:p.name, wins:p.wins, era:p.era, stuff:p.stuff, stamina:100, strikeouts:0, pitches:0, used:false};
-    }),
-    // 상대팀 투수 (우리 투수와 완전히 별개)
-    oppPitcherIdx: 0,
-    oppPitchers: OPP_PITCHERS_BASE.map(function(p) {
-      return {name:p.name, wins:p.wins, era:p.era, stuff:p.stuff, stamina:100, strikeouts:0, pitches:0};
-    }),
-    roster: ROSTER.map(function(p) { return Object.assign({}, p); }),
-    logs: [{msg:'⚾ 경기 시작! 감독님 파이팅!', cls:'ln'}],
-    gameOver: false,
-    locked: false,
-    totalHits: 0,
-    totalWalks: 0,
-  };
-  G.pitchers[0].used = true;
-}
-
-// ── HELPERS ───────────────────────────────────────
-function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-function pct(n) { return Math.random() * 100 < n; }
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-function addLog(msg, cls) {
-  cls = cls || 'ln';
-  G.logs.unshift({msg: msg, cls: cls});
-  if (G.logs.length > 40) G.logs.pop();
-}
-
-// ── RENDER ────────────────────────────────────────
-function renderAll() {
-  // scores
-  document.getElementById('my-score').textContent  = G.myScore;
-  document.getElementById('opp-score').textContent = G.oppScore;
-
-  // inning
-  document.getElementById('inn-arrow').textContent = G.isTop ? '▲' : '▽';
-  document.getElementById('inn-num').textContent   = G.inning;
-
-  // count dots
-  renderDots('dots-ball',   G.balls,   3, 'ball');
-  renderDots('dots-strike', G.strikes, 2, 'strike');
-  renderDots('dots-out',    G.outs,    3, 'out');
-
-  // runners
-  ['r1','r2','r3'].forEach(function(id, i) {
-    document.getElementById(id).style.opacity = G.runners[i] ? '1' : '0';
-  });
-
-  // batter card
-  var b = G.roster[G.batterIdx];
-  document.getElementById('bat-name').textContent = '#' + (G.batterIdx + 1) + ' ' + b.name;
-  document.getElementById('bat-avg').textContent  = fmtAvg(b.avg);
-  document.getElementById('bat-hr').textContent   = b.hr;
-  document.getElementById('bat-rbi').textContent  = b.rbi;
-  document.getElementById('bat-con').textContent  = b.contact;
-  document.getElementById('bat-pow').textContent  = b.power;
-
-  // pitcher
-  var p = G.pitchers[G.pitcherIdx];
-  document.getElementById('p-name').textContent     = p.name;
-  document.getElementById('p-era').textContent      = '평균자책 ' + p.era.toFixed(2);
-  document.getElementById('p-wins').textContent     = p.wins;
-  document.getElementById('p-k').textContent        = p.strikeouts;
-  document.getElementById('p-pitches').textContent  = p.pitches;
-  var st = Math.round(p.stamina);
-  document.getElementById('p-stam-num').textContent = st + '%';
-  var bar = document.getElementById('p-stam-bar');
-  bar.style.width = st + '%';
-  bar.style.background = st > 60 ? 'var(--gold)' : st > 30 ? '#d08030' : '#c04040';
-
-  // order list
-  var html = '';
-  G.roster.forEach(function(r, i) {
-    html += '<div class="order-item' + (i === G.batterIdx ? ' cur' : '') + '">' +
-      '<span class="oi-idx">' + (i+1) + '</span>' +
-      '<span>' + r.name + '</span>' +
-      '<span class="oi-pos">' + r.pos + '</span>' +
-      '<span class="oi-avg">' + fmtAvg(r.avg) + '</span>' +
-      '</div>';
-  });
-  document.getElementById('order-list').innerHTML = html;
-
-  // log
-  var logHtml = '';
-  G.logs.forEach(function(l) {
-    logHtml += '<div class="log-line ' + l.cls + '">' + l.msg + '</div>';
-  });
-  document.getElementById('log-box').innerHTML = logHtml;
-
-  // footer
-  document.getElementById('ftr-score').textContent =
-    '서울 ' + G.myScore + ' - ' + G.oppScore + ' 부산';
-
-  // pitcher warn
-  if (p.stamina <= 25 && !G.locked) {
-    document.getElementById('ftr-status').textContent =
-      '⚠️ ' + p.name + ' 구위 저하! 교체를 고려하세요';
-  } else if (!G.locked) {
-    document.getElementById('ftr-status').textContent =
-      G.inning + '회 ' + (G.isTop ? '초' : '말') + ' — ' + p.name + ' 투구중';
-  }
-
-  // buttons
-  var lock = G.locked || G.gameOver || !G.isTop;
-  ['swing','contact','bunt','steal','wait','hitrun','change'].forEach(function(id) {
-    var btn = document.getElementById('btn-' + id);
-    if (btn) btn.disabled = lock;
-  });
-}
-
-function renderDots(id, count, max, cls) {
-  var el = document.getElementById(id);
-  var html = '';
-  for (var i = 0; i < max; i++) {
-    html += '<div class="dot ' + cls + (i < count ? ' on' : '') + '"></div>';
-  }
-  el.innerHTML = html;
-}
-
-function fmtAvg(n) {
-  return '.' + String(Math.round(n * 1000)).padStart(3, '0');
-}
-
-// ── GAME LOGIC ────────────────────────────────────
-function doAction(type) {
-  if (G.locked || G.gameOver || !G.isTop) return;
-  G.locked = true;
-  document.getElementById('ftr-status').textContent = '...';
-
-  setTimeout(function() {
-    resolveAtBat(type);
-    renderAll();
-  }, 200);
-}
-
-function resolveAtBat(type) {
-  var bat = G.roster[G.batterIdx];
-  // 우리팀 공격 → 상대 투수가 공을 던짐
-  var oppPit = G.oppPitchers[G.oppPitcherIdx];
-  oppPit.pitches++;
-  var decay = rnd(1, 4) + (oppPit.pitches > 80 ? 2 : 0);
-  oppPit.stamina = Math.max(0, oppPit.stamina - decay);
-  var stuffMod = oppPit.stamina / 100;
-
-  if (type === 'steal') { doSteal(); return; }
-  if (type === 'bunt')  { doBunt();  return; }
-
-  var result = calcResult(type, bat, stuffMod);
-  applyResult(result, bat);
-}
-
-function calcResult(type, bat, stuffMod) {
-  var r = Math.random();
-
-  if (type === 'swing') {
-    var hitRate = (bat.avg + (bat.power - 70) * 0.001) * stuffMod;
-    if (r < hitRate * 0.5)  return 'hit_swing';
-    if (r < hitRate * 0.7)  return 'out_fly';
-    if (r < hitRate * 0.85) return 'out_ground';
-    if (r < hitRate * 0.92) return 'foul';
-    return 'strikeout';
-  }
-
-  if (type === 'contact') {
-    var hitRate2 = (bat.avg + (bat.contact - 70) * 0.001) * stuffMod;
-    if (r < hitRate2 * 0.58) return 'hit_contact';
-    if (r < hitRate2 * 0.75) return 'out_ground';
-    if (r < hitRate2 * 0.86) return 'out_fly';
-    if (r < hitRate2 * 0.93) return 'foul';
-    return 'strikeout';
-  }
-
-  if (type === 'wait') {
-    var ballRate = (1 - stuffMod) * 0.6 + 0.25;
-    if (r < ballRate) return 'ball';
-    if (r < ballRate + 0.35) return 'called_strike';
-    if (r < ballRate + 0.50) return 'foul';
-    return 'strikeout';
-  }
-
-  if (type === 'hitrun') {
-    // advance runners first, then contact swing
-    advanceRunnersHitRun();
-    var hitRate3 = (bat.avg + (bat.contact - 70) * 0.001) * stuffMod * 1.05;
-    if (r < hitRate3 * 0.52) return 'hit_contact';
-    if (r < hitRate3 * 0.72) return 'out_ground';
-    if (r < hitRate3 * 0.84) return 'out_fly';
-    return 'strikeout';
-  }
-
-  return 'ball';
-}
-
-function advanceRunnersHitRun() {
-  // runners advance one base
-  if (G.runners[1]) { G.runners[2] = true; G.runners[1] = false; }
-  if (G.runners[0]) { G.runners[1] = true; G.runners[0] = false; }
-}
-
-function applyResult(result, bat) {
-  if (result === 'hit_swing') {
-    var rand = Math.random();
-    var powerRatio = bat.power / 100;
-    if (rand < powerRatio * 0.25) { processHit('hr',  bat); }
-    else if (rand < 0.2)          { processHit('3b',  bat); }
-    else if (rand < 0.45)         { processHit('2b',  bat); }
-    else                          { processHit('1b',  bat); }
-    return;
-  }
-  if (result === 'hit_contact') {
-    var rand2 = Math.random();
-    if (rand2 < 0.08)   { processHit('2b', bat); }
-    else                { processHit('1b', bat); }
-    return;
-  }
-  if (result === 'out_fly') {
-    addLog('🌬️ ' + bat.name + ' 플라이 아웃', 'lb');
-    addOut();
-    return;
-  }
-  if (result === 'out_ground') {
-    if (G.runners[0] && G.outs < 2) {
-      addLog('⚡ ' + bat.name + ' 병살타!', 'lb');
-      G.runners[0] = false;
-      addOut();
-      if (!G.gameOver) addOut();
-    } else {
-      addLog('⬇️ ' + bat.name + ' 내야 땅볼 아웃', 'lb');
-      addOut();
-    }
-    return;
-  }
-  if (result === 'strikeout') {
-    addLog('❌ ' + bat.name + ' 삼진 아웃!', 'lb');
-    addOut();
-    return;
-  }
-  if (result === 'foul') {
-    if (G.strikes < 2) G.strikes++;
-    addLog('📌 파울볼 (' + G.strikes + '스트라이크)', 'ln');
-    G.locked = false;
-    return;
-  }
-  if (result === 'ball') {
-    G.balls++;
-    if (G.balls >= 4) {
-      processWalk(bat);
-    } else {
-      addLog('⚪ 볼 (' + G.balls + '볼)', 'ln');
-      G.locked = false;
-    }
-    return;
-  }
-  if (result === 'called_strike') {
-    G.strikes++;
-    if (G.strikes >= 3) {
-      addLog('🎳 ' + bat.name + ' 낫아웃 삼진!', 'lb');
-      addOut();
-    } else {
-      addLog('🎳 스트라이크! (' + G.balls + '볼 ' + G.strikes + '스)', 'ln');
-      G.locked = false;
-    }
-    return;
-  }
-}
-
-function processHit(type, bat) {
-  G.totalHits++;
-  G.locked = false;
-  if (type === 'hr') {
-    var scored = 1 + G.runners.filter(Boolean).length;
-    G.myScore += scored;
-    G.runners = [false, false, false];
-    addLog('💥 ' + bat.name + ' 홈런! ' + scored + '점 득점!', 'lh');
-    nextBatter();
-    return;
-  }
-  if (type === '3b') {
-    var s3 = countScore(2); G.myScore += s3;
-    G.runners = [false, false, true];
-    addLog('🏃 ' + bat.name + ' 3루타!' + (s3 > 0 ? ' ' + s3 + '점!' : ''), 'lg');
-    nextBatter();
-    return;
-  }
-  if (type === '2b') {
-    var s2 = countScore(1); G.myScore += s2;
-    var was1 = G.runners[0];
-    G.runners[2] = G.runners[1];
-    G.runners[1] = true;
-    G.runners[0] = false;
-    if (was1) { G.myScore += 1; }
-    addLog('🎯 ' + bat.name + ' 2루타!' + (s2 + (was1?1:0) > 0 ? ' ' + (s2+(was1?1:0)) + '점!' : ''), 'lg');
-    nextBatter();
-    return;
-  }
-  if (type === '1b') {
-    var scored1 = 0;
-    if (G.runners[2]) scored1++;
-    G.runners[2] = G.runners[1];
-    G.runners[1] = G.runners[0];
-    G.runners[0] = true;
-    G.myScore += scored1;
-    addLog('✅ ' + bat.name + ' 안타!' + (scored1 > 0 ? ' ' + scored1 + '점!' : ''), 'lg');
-    nextBatter();
-    return;
-  }
-}
-
-function countScore(fromBase) {
-  // fromBase: 루에서 홈으로 올 수 있는 주자 수 (2=3루주자만, 1=2루+3루)
-  var s = 0;
-  for (var i = fromBase; i < 3; i++) {
-    if (G.runners[i]) { s++; G.runners[i] = false; }
-  }
-  return s;
-}
-
-function processWalk(bat) {
-  G.totalWalks++;
-  // 만루 → 득점
-  if (G.runners[0] && G.runners[1] && G.runners[2]) {
-    G.myScore++;
-    addLog('🚶 ' + bat.name + ' 볼넷! 밀어내기 1점!', 'lg');
-  } else {
-    if (G.runners[0] && G.runners[1]) G.runners[2] = true;
-    else if (G.runners[0])            G.runners[1] = true;
-    G.runners[0] = true;
-    addLog('🚶 ' + bat.name + ' 볼넷 출루', 'ln');
-  }
-  G.balls = 0; G.strikes = 0;
-  G.locked = false;
-  nextBatter();
-}
-
-function doSteal() {
-  var fromBase = -1;
-  for (var i = 0; i < 3; i++) { if (G.runners[i]) { fromBase = i; break; } }
-  if (fromBase < 0) {
-    addLog('⚠️ 루상에 주자가 없습니다', 'ln');
-    G.locked = false;
-    return;
-  }
-  if (fromBase === 2) {
-    addLog('⚠️ 3루 주자는 홈 스틸 도전!', 'ln');
-    if (pct(30)) {
-      G.myScore++;
-      G.runners[2] = false;
-      addLog('💨 홈 스틸 성공! 1점!', 'lh');
-    } else {
-      G.runners[2] = false;
-      addLog('❌ 홈 스틸 실패! 아웃!', 'lb');
-      addOut();
-      return;
-    }
-    G.locked = false;
-    return;
-  }
-  var spd = G.roster[G.batterIdx].speed;
-  var chance = 40 + spd * 0.35;
-  var labels = ['1루→2루', '2루→3루'];
-  if (pct(chance)) {
-    G.runners[fromBase] = false;
-    G.runners[fromBase + 1] = true;
-    addLog('💨 도루 성공! ' + labels[fromBase] + '!', 'lg');
-    G.locked = false;
-  } else {
-    G.runners[fromBase] = false;
-    addLog('❌ 도루 실패! ' + ['1루','2루'][fromBase] + ' 주자 아웃!', 'lb');
-    addOut();
-  }
-}
-
-function doBunt() {
-  var bat = G.roster[G.batterIdx];
-  if (pct(68)) {
-    var adv = false;
-    if (G.runners[1]) { G.runners[2] = true; G.runners[1] = false; adv = true; }
-    if (G.runners[0]) { G.runners[1] = true; G.runners[0] = false; adv = true; }
-    addLog('📋 ' + bat.name + ' 번트 성공!' + (adv ? ' 주자 진루' : ''), 'lg');
-    addOut();
-  } else {
-    addLog('📋 ' + bat.name + ' 번트 실패 — 파울아웃!', 'lb');
-    addOut();
-  }
-}
-
-// 안타·볼넷 후 타자 교체 (아웃 후는 addOut 내부에서 처리)
-function nextBatter() {
-  G.balls = 0; G.strikes = 0;
-  G.batterIdx = (G.batterIdx + 1) % 9;
-  G.locked = false;
-}
-
-function addOut() {
-  G.outs++;
-  if (G.outs >= 3) {
-    // 이닝 종료 — locked는 endHalfInning/runOppBatting 에서 관리
-    endHalfInning();
-  } else {
-    // 아웃 후 다음 타자로 전환
-    G.balls = 0; G.strikes = 0;
-    G.batterIdx = (G.batterIdx + 1) % 9;
-    G.locked = false;
-  }
-}
-
-function endHalfInning() {
-  G.balls = 0; G.strikes = 0; G.outs = 0;
-  G.runners = [false, false, false];
-
-  if (G.isTop) {
-    // 우리팀 공격 끝 → 상대팀 공격(말)
-    G.isTop = false;
-    G.locked = true; // 상대 공격 중 버튼 잠금
-    addLog('--- ' + G.inning + '회 말 시작 (상대팀 공격) ---', 'ln');
-    renderAll();
-    runOppBatting();
-  } else {
-    // 상대팀 공격 끝 → 다음 이닝 초 or 게임 종료
-    if (G.inning >= 9) {
-      endGame();
-      return;
-    }
-    G.inning++;
-    G.isTop = true;
-    G.locked = false;
-    addLog('--- ' + G.inning + '회 초 시작 ---', 'ln');
-    renderAll();
-  }
-}
-
-// ── OPP AUTO BATTING ─────────────────────────────
-function runOppBatting() {
-  var oppOuts = 0;
-  var oppRunners = [false, false, false];
-
-  function nextPlay() {
-    if (oppOuts >= 3 || G.gameOver) {
-      // 상대 공격 끝 → endHalfInning으로 통일 처리 (isTop=false 상태)
-      endHalfInning();
-      return;
-    }
-
-    var pit = G.pitchers[G.pitcherIdx];  // 상대 공격 시 우리 투수가 던짐 (올바름)
-    var stuffMod = pit.stamina / 100;
-    var r = Math.random();
-
-    // determine result for opp
-    // hit chance scales inversely with our pitcher stuff
-    var baseHit = 0.26 * (1.2 - stuffMod * 0.4);
-    var result;
-    if (r < baseHit) {
-      result = 'hit';
-    } else if (r < baseHit + 0.06) {
-      result = 'walk';
-    } else {
-      result = 'out';
-    }
-
-    if (result === 'hit') {
-      var hr = Math.random() < 0.08 * (1 - stuffMod * 0.3);
-      if (hr) {
-        var scored = 1 + oppRunners.filter(Boolean).length;
-        G.oppScore += scored;
-        oppRunners = [false, false, false];
-        addLog('🔴 상대 홈런! ' + scored + '점 실점!', 'lb');
-      } else {
-        var sc2 = 0;
-        if (oppRunners[2]) { sc2++; oppRunners[2] = false; }
-        oppRunners[2] = oppRunners[1];
-        oppRunners[1] = oppRunners[0];
-        oppRunners[0] = true;
-        G.oppScore += sc2;
-        var hitTypes = ['안타', '안타', '안타', '2루타'];
-        addLog('🔴 상대 ' + pick(hitTypes) + (sc2 > 0 ? ' ' + sc2 + '점!' : ''), 'lb');
-      }
-      pit.pitches += rnd(2, 5);
-      pit.stamina = Math.max(0, pit.stamina - rnd(2, 5));
-    } else if (result === 'walk') {
-      if (oppRunners[0] && oppRunners[1] && oppRunners[2]) {
-        G.oppScore++;
-        addLog('🔴 상대 볼넷 밀어내기! 1점 실점!', 'lb');
-      } else {
-        if (oppRunners[0] && oppRunners[1]) oppRunners[2] = true;
-        else if (oppRunners[0])            oppRunners[1] = true;
-        oppRunners[0] = true;
-        addLog('⚪ 상대 볼넷 출루', 'ln');
-      }
-      pit.pitches += rnd(4, 6);
-      pit.stamina = Math.max(0, pit.stamina - rnd(1, 3));
-    } else {
-      oppOuts++;
-      G.outs = oppOuts; // 헤더 아웃 표시 동기화
-      var outTypes = ['땅볼 아웃', '플라이 아웃', '삼진', '삼진'];
-      addLog('✅ ' + pick(outTypes) + ' (' + oppOuts + '아웃)', 'ln');
-      pit.pitches += rnd(1, 4);
-      pit.stamina = Math.max(0, pit.stamina - rnd(1, 2));
-    }
-
-    renderAll();
-    setTimeout(nextPlay, 700);
-  }
-
-  setTimeout(nextPlay, 500);
-}
-
-// ── PITCHER MODAL ─────────────────────────────────
-function openPitcherModal() {
-  if (G.locked || G.gameOver) return;
-  var html = '';
-  G.pitchers.forEach(function(p, i) {
-    if (i === G.pitcherIdx) return;
-    var disabled = p.used && p.stamina < 10;
-    html += '<div class="pm-item' + (disabled ? ' disabled' : '') + '">' +
-      '<div><div class="pm-name">' + p.name + '</div>' +
-      '<div class="pm-stam">구위 ' + Math.round(p.stamina) + '% | ERA ' + p.era.toFixed(2) + '</div></div>' +
-      '<span class="pm-stam" style="font-size:11px">' + (p.used ? '이미등판' : '준비완료') + '</span>' +
-      (disabled ? '' : '<button class="pm-btn" onclick="changePitcher(' + i + ')">등판</button>') +
-      '</div>';
-  });
-  if (!html) html = '<div style="color:var(--muted);font-size:13px;padding:8px">더 이상 교체할 투수가 없습니다</div>';
-  document.getElementById('pm-list').innerHTML = html;
-  document.getElementById('p-modal').classList.add('show');
-}
-
-function closePitcherModal() {
-  document.getElementById('p-modal').classList.remove('show');
-}
-
-function changePitcher(idx) {
-  closePitcherModal();
-  G.pitcherIdx = idx;
-  G.pitchers[idx].used = true;
-  addLog('🔄 ' + G.pitchers[idx].name + ' 등판!', 'lh');
-  renderAll();
-}
-
-// ── GAME OVER ─────────────────────────────────────
-function endGame() {
-  G.gameOver = true;
-  G.locked = true;
-  var won  = G.myScore > G.oppScore;
-  var tied = G.myScore === G.oppScore;
-  document.getElementById('m-icon').textContent  = won ? '🏆' : tied ? '🤝' : '😔';
-  document.getElementById('m-title').textContent = won ? '승리!' : tied ? '무승부' : '패배...';
-  document.getElementById('m-desc').textContent  =
-    '최종 스코어: 서울 불새 ' + G.myScore + ' - ' + G.oppScore + ' 부산 해룡\n' +
-    '안타: ' + G.totalHits + '개  |  볼넷: ' + G.totalWalks + '개\n\n' +
-    (won ? '훌륭한 경기였습니다, 감독님!' : tied ? '아쉬운 무승부입니다.' : '내일 반드시 설욕합시다!');
-  document.getElementById('modal').classList.add('show');
-}
-
-function restartGame() {
-  document.getElementById('modal').classList.remove('show');
-  initState();
-  renderAll();
-}
-
-// ── START ─────────────────────────────────────────
-initState();
-renderAll();
-</script>
-</body>
-</html>
+import time
+import sys
+
+# 텍스트 출력 효과 함수
+def slow_print(text, delay=0.03):
+    for char in text:
+        sys.stdout.write(char)
+        sys.stdout.flush()
+        time.sleep(delay)
+    print()
+
+def print_line():
+    print("\n" + "="*50 + "\n")
+
+class Game:
+    def __init__(self):
+        # 호감도 시스템
+        self.affection = {
+            "도윤": 0,    # 동갑내기 신인 유격수
+            "태준": 0,    # 4살 연상 마무리 투수 (쎄한 성격)
+            "지훈": 0,    # 4살 연상 타팀 3루수 (슈퍼스타)
+            "선우": 0     # 5살 연상 타팀 유격수 (마성의 남자)
+        }
+        self.day = 1
+        self.name = ""
+        self.cheating_flag = False
+        
+    def start(self):
+        print_line()
+        slow_print("[경고] 본 게임은 픽션이며, 등장하는 인물, 단체, 사건은 실제와 무관합니다.")
+        slow_print("[경고] 플레이어의 선택에 따라 강압적이거나 비윤리적인 관계(가스라이팅, 집착 등)가 묘사될 수 있습니다. 실제 연인 관계에서는 절대 일어나선 안 될 일임을 명시합니다.")
+        print_line()
+        time.sleep(1)
+        
+        slow_print("갓 성인이 된 당신. 치열한 경쟁을 뚫고 가상의 KBO 구단 '서울 피닉스'의 콘텐츠 마케터로 입사하게 되었습니다.")
+        self.name = input("주인공의 이름을 입력하세요: ")
+        
+        slow_print(f"\n환영합니다, {self.name} PD님. 당신의 야구장 로맨스가 지금 시작됩니다.")
+        time.sleep(1)
+        self.day_1()
+
+    def day_1(self):
+        print_line()
+        slow_print("【 DAY 1: 출근 첫날, 더그아웃의 공기 】")
+        slow_print("오늘은 선수단 유튜브 콘텐츠 촬영을 위해 그라운드로 내려왔다.")
+        slow_print("누구에게 먼저 인터뷰를 요청할까?")
+        print("\n1. 훈련 준비 중인 동갑내기 신인 유격수, 이도윤에게 다가간다.")
+        print("2. 불펜에서 몸을 풀고 있는 4살 연상 마무리 투수, 강태준에게 다가간다.")
+        
+        choice = input("\n선택지를 입력하세요 (1/2): ")
+        
+        if choice == '1':
+            self.meet_doyun()
+        elif choice == '2':
+            self.meet_taejun()
+        else:
+            print("잘못된 입력입니다.")
+            self.day_1()
+            return
+            
+        self.day_2()
+
+    def meet_doyun(self):
+        print_line()
+        slow_print("큰 손으로 배트를 매만지던 도윤이 당신을 보고 깜짝 놀라며 일어선다.")
+        slow_print("이도윤 (20, 유격수, 178cm)")
+        slow_print("도윤: \"아, 안녕하세요. 새로 오신 분... 맞으시죠?\"")
+        slow_print("귀 끝이 살짝 붉어진 채로 그가 꾸벅 인사를 한다.")
+        print("\n1. \"네! 동갑이던데 앞으로 잘 부탁해요, 도윤 선수.\" (밝게 웃는다)")
+        print("2. \"인터뷰 촬영 좀 해도 될까요?\" (사무적으로 말한다)")
+        
+        choice = input("\n선택지를 입력하세요 (1/2): ")
+        if choice == '1':
+            slow_print("\n도윤: \"아... 네! 동갑...이군요. 잘 부탁드립니다. 저, 카메라 앞에선 좀 뚝딱거려서... 잘 이끌어주세요.\"")
+            self.affection["도윤"] += 15
+            slow_print("그가 큰 손으로 뒷머리를 긁적이더니, 당신을 보며 작게 미소 지었다. (도윤 호감도 상승)")
+        else:
+            slow_print("\n도윤: \"아, 네. 지금 바로 하시면 될까요?\"")
+            self.affection["도윤"] += 5
+            slow_print("그는 성실하게 인터뷰에 응해주었다.")
+
+    def meet_taejun(self):
+        print_line()
+        slow_print("불펜에서 가볍게 공을 던지던 태준이 당신을 발견하고는 수건으로 땀을 닦으며 다가온다.")
+        slow_print("그의 사생활에 대한 소문은 익히 들었지만, 눈앞의 그는 완벽한 프로의 모습이다.")
+        slow_print("강태준 (24, 마무리 투수, 185cm)")
+        slow_print("태준: \"처음 뵙네요. 새로 오신 PD님? 카메라 무거워 보이는데, 제가 들어드릴까요?\"")
+        print("\n1. \"괜찮아요! 제 일인걸요. 태준 선수 인터뷰 좀 할 수 있을까요?\"")
+        print("2. (그의 페이스에 말리지 않게 조심하며) \"감사하지만 괜찮습니다. 촬영 바로 갈게요.\"")
+        
+        choice = input("\n선택지를 입력하세요 (1/2): ")
+        if choice == '1':
+            slow_print("\n태준: \"그래요? 그럼 대신 나중에 시원한 커피라도 한 잔 사줄게요. 촬영 시작하죠.\"")
+            self.affection["태준"] += 10
+            slow_print("태준은 부드럽게 웃으며 완벽한 인터뷰 멘트를 뽑아냈다. 프로의 워크에식이 돋보인다. (태준 호감도 상승)")
+        else:
+            slow_print("\n태준: \"흐음... 철벽이시네. 알겠습니다. 예쁘게 찍어주세요, PD님.\"")
+            self.affection["태준"] += 15
+            slow_print("그가 살짝 흥미롭다는 듯한 눈빛으로 당신을 내려다보며 웃었다. 어딘가 쎄한 기분이 든다. (태준 호감도 대폭 상승)")
+
+    def day_2(self):
+        print_line()
+        slow_print("【 DAY 2: 타 구단과의 교류전 】")
+        slow_print("오늘은 타 구단과의 연습 경기가 있는 날. 경기 전 그라운드에서 다른 팀 선수들의 모습도 보인다.")
+        slow_print("인터뷰 스케치를 따러 가야 하는데, 누구를 찍을까?")
+        print("\n1. 상대 팀 슈퍼스타 3루수, 서지훈 (오빠 소리 듣는 걸 좋아함)")
+        print("2. 여자 팬들을 몰고 다니는 마성의 유격수, 한선우")
+        
+        choice = input("\n선택지를 입력하세요 (1/2): ")
+        if choice == '1':
+            self.meet_jihoon()
+        elif choice == '2':
+            self.meet_seonwoo()
+        else:
+            print("잘못된 입력입니다.")
+            self.day_2()
+            return
+            
+        self.check_endings()
+
+    def meet_jihoon(self):
+        print_line()
+        slow_print("서지훈 (24, 타팀 3루수, 183cm)")
+        slow_print("지훈: \"어? 피닉스 새 직원 분이신가 보네. 안녕하세요! 촬영 오셨어요?\"")
+        slow_print("슈퍼스타답게 구김살 없는 밝은 미소로 그가 먼저 인사를 건넨다. 엄청나게 큰 손이 눈에 띈다.")
+        print("\n1. \"안녕하세요, 지훈 선수! 팬이에요. 인터뷰 부탁드려도 될까요?\"")
+        print("2. \"지훈 오빠! 피닉스 유튜브에도 출연 한 번만 해주세요!\"")
+        
+        choice = input("\n선택지를 입력하세요 (1/2): ")
+        if choice == '1':
+            slow_print("\n지훈: \"그럼요! 제가 또 피닉스 유튜브 조회수 좀 올려드려야지.\"")
+            self.affection["지훈"] += 10
+        else:
+            slow_print("\n지훈: \"하하, 오빠요? 피닉스 직원분한테 오빠 소리 들으니까 기분 좋은데요? 당연히 해드려야지.\"")
+            self.affection["지훈"] += 20
+            slow_print("지훈이 환하게 웃으며 당신의 머리 위로 커다란 손을 올려 살짝 쓰다듬는 시늉을 했다. (지훈 호감도 대폭 상승)")
+
+    def meet_seonwoo(self):
+        print_line()
+        slow_print("한선우 (25, 타팀 유격수, 외모 1티어)")
+        slow_print("선우: \"조심하세요. 그쪽으로 공 날아갑니다.\"")
+        slow_print("날아오는 파울 타구를 막아주며 나타난 그는, 왜 여자들이 그에게 미치는지 단번에 알 수 있는 외모였다.")
+        slow_print("선우: \"놀라셨어요? 다친 데는 없고요?\"")
+        print("\n1. \"네, 네... 감사합니다. 선우 선수, 덕분에 살았어요.\" (얼굴을 붉힌다)")
+        print("2. \"감사합니다. 저, 혹시 괜찮으시면 짧게 인터뷰 하나 가능할까요?\" (침착하게 대처한다)")
+        
+        choice = input("\n선택지를 입력하세요 (1/2): ")
+        if choice == '1':
+            slow_print("\n선우: \"다행이네요. 얼굴이 빨개지셨는데, 무리하지 마시고 천천히 촬영하세요.\"")
+            self.affection["선우"] += 15
+            slow_print("그의 다정한 목소리와 꿀 떨어지는 눈빛에 심장이 내려앉는 기분이다. (선우 호감도 상승)")
+        else:
+            slow_print("\n선우: \"방금 공 맞을 뻔했는데 인터뷰부터 챙기시는 거예요? 직업 정신 대단하시네. 좋아요, 합시다.\"")
+            self.affection["선우"] += 20
+            slow_print("그가 다정하게 웃으며 당신과 눈을 맞춘다. 프로다운 모습이 마음에 든 모양이다. (선우 호감도 대폭 상승)")
+
+    def check_endings(self):
+        print_line()
+        slow_print("몇 주간의 치열한 밀당과 업무가 끝난 후...")
+        slow_print("당신의 마음은 누구에게로 향했을까? (임시 엔딩 분기)")
+        
+        # 가장 호감도가 높은 캐릭터 찾기
+        max_affection = max(self.affection.values())
+        best_chars = [char for char, aff in self.affection.items() if aff == max_affection]
+        
+        # 양다리/어장관리 판별 (호감도 15 이상인 캐릭터가 2명 이상일 때)
+        high_affection_count = sum(1 for aff in self.affection.values() if aff >= 15)
+        
+        if high_affection_count >= 2 and self.affection["태준"] >= 15:
+            # 태준이 포함된 어장관리가 들켰을 경우의 얀데레/집착 엔딩
+            self.dark_taejun_ending()
+        elif best_chars[0] == "도윤" and max_affection > 0:
+            slow_print("엔딩: [순둥이 신인 유격수와의 비밀 연애]")
+            slow_print(f"도윤: \"{self.name}아, 나 오늘 홈런 치면... 나한테 장가, 아니, 나랑 사귀어 줄래요?\"")
+        elif best_chars[0] == "지훈" and max_affection > 0:
+            slow_print("엔딩: [슈퍼스타의 유일한 오빠가 되다]")
+            slow_print(f"지훈: \"오빠라고 불러줬을 때부터 내 마음은 정해져 있었어요. 나랑 만나요, {self.name} 씨.\"")
+        elif best_chars[0] == "선우" and max_affection > 0:
+            slow_print("엔딩: [모두의 연인에서 나만의 연인으로]")
+            slow_print(f"선우: \"다른 여자들은 이제 눈에 안 들어옵니다. 내 옆에서 영원히 내 편 해줄래요?\"")
+        elif best_chars[0] == "태준" and max_affection > 0:
+            slow_print("엔딩: [위험하지만 끊을 수 없는 매력]")
+            slow_print(f"태준: \"도망칠 생각은 애초에 하지 마요. 이미 늦었으니까.\"")
+        else:
+            slow_print("엔딩: [솔로가 최고지! (야구와 결혼한 PD)]")
+            slow_print("이 험난한 야구판에서 남자한테 정신 팔릴 시간이 어딨어! 나는 일로 성공한다!")
+            
+        print_line()
+        print("감사합니다. 데모 플레이가 종료되었습니다.")
+
+    def dark_taejun_ending(self):
+        slow_print("【 배드 엔딩 : 그림자 속의 마무리 투수 】")
+        slow_print("당신이 다른 선수들과도 친하게 지낸다는 소문이 퍼졌다.")
+        slow_print("퇴근길, 어두운 주차장에서 누군가 당신의 손목을 낚아챈다. 강태준이다.")
+        slow_print(f"태준: \"{self.name} PD님. 요즘 꽤 바쁘시던데. 이놈 저놈 다 만나주고 다니느라.\"")
+        slow_print("그가 평소의 다정하던 미소를 지운 채, 서늘한 눈빛으로 당신을 벽으로 밀어붙인다.")
+        slow_print("태준: \"내가 분명히 말하지 않았나? 내 구역에 들어온 이상, 다른 놈 쳐다보는 건 안 된다고.\"")
+        slow_print("당신은 그의 집착과 통제에서 쉽게 벗어날 수 없음을 직감했다...")
+
+if __name__ == "__main__":
+    game = Game()
+    game.start()

@@ -1,202 +1,24 @@
-import time
-import sys
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> </title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif+KR:wght@300;400;600&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
-# 텍스트 출력 효과 함수
-def slow_print(text, delay=0.03):
-    for char in text:
-        sys.stdout.write(char)
-        sys.stdout.flush()
-        time.sleep(delay)
-    print()
+  <nav class="mobile-genre-bar" id="mobileBar">
+    <div class="mobile-genre-bar-inner" id="mobileBarInner"></div>
+  </nav>
 
-def print_line():
-    print("\n" + "="*50 + "\n")
+  <div class="layout">
+    <aside id="sidebar"></aside>
+    <main id="main"></main>
+  </div>
 
-class Game:
-    def __init__(self):
-        # 호감도 시스템
-        self.affection = {
-            "도윤": 0,    # 동갑내기 신인 유격수
-            "태준": 0,    # 4살 연상 마무리 투수 (쎄한 성격)
-            "지훈": 0,    # 4살 연상 타팀 3루수 (슈퍼스타)
-            "선우": 0     # 5살 연상 타팀 유격수 (마성의 남자)
-        }
-        self.day = 1
-        self.name = ""
-        self.cheating_flag = False
-        
-    def start(self):
-        print_line()
-        slow_print("[경고] 본 게임은 픽션이며, 등장하는 인물, 단체, 사건은 실제와 무관합니다.")
-        slow_print("[경고] 플레이어의 선택에 따라 강압적이거나 비윤리적인 관계(가스라이팅, 집착 등)가 묘사될 수 있습니다. 실제 연인 관계에서는 절대 일어나선 안 될 일임을 명시합니다.")
-        print_line()
-        time.sleep(1)
-        
-        slow_print("갓 성인이 된 당신. 치열한 경쟁을 뚫고 가상의 KBO 구단 '서울 피닉스'의 콘텐츠 마케터로 입사하게 되었습니다.")
-        self.name = input("주인공의 이름을 입력하세요: ")
-        
-        slow_print(f"\n환영합니다, {self.name} PD님. 당신의 야구장 로맨스가 지금 시작됩니다.")
-        time.sleep(1)
-        self.day_1()
+  <script src="app.js"></script>
 
-    def day_1(self):
-        print_line()
-        slow_print("【 DAY 1: 출근 첫날, 더그아웃의 공기 】")
-        slow_print("오늘은 선수단 유튜브 콘텐츠 촬영을 위해 그라운드로 내려왔다.")
-        slow_print("누구에게 먼저 인터뷰를 요청할까?")
-        print("\n1. 훈련 준비 중인 동갑내기 신인 유격수, 이도윤에게 다가간다.")
-        print("2. 불펜에서 몸을 풀고 있는 4살 연상 마무리 투수, 강태준에게 다가간다.")
-        
-        choice = input("\n선택지를 입력하세요 (1/2): ")
-        
-        if choice == '1':
-            self.meet_doyun()
-        elif choice == '2':
-            self.meet_taejun()
-        else:
-            print("잘못된 입력입니다.")
-            self.day_1()
-            return
-            
-        self.day_2()
-
-    def meet_doyun(self):
-        print_line()
-        slow_print("큰 손으로 배트를 매만지던 도윤이 당신을 보고 깜짝 놀라며 일어선다.")
-        slow_print("이도윤 (20, 유격수, 178cm)")
-        slow_print("도윤: \"아, 안녕하세요. 새로 오신 분... 맞으시죠?\"")
-        slow_print("귀 끝이 살짝 붉어진 채로 그가 꾸벅 인사를 한다.")
-        print("\n1. \"네! 동갑이던데 앞으로 잘 부탁해요, 도윤 선수.\" (밝게 웃는다)")
-        print("2. \"인터뷰 촬영 좀 해도 될까요?\" (사무적으로 말한다)")
-        
-        choice = input("\n선택지를 입력하세요 (1/2): ")
-        if choice == '1':
-            slow_print("\n도윤: \"아... 네! 동갑...이군요. 잘 부탁드립니다. 저, 카메라 앞에선 좀 뚝딱거려서... 잘 이끌어주세요.\"")
-            self.affection["도윤"] += 15
-            slow_print("그가 큰 손으로 뒷머리를 긁적이더니, 당신을 보며 작게 미소 지었다. (도윤 호감도 상승)")
-        else:
-            slow_print("\n도윤: \"아, 네. 지금 바로 하시면 될까요?\"")
-            self.affection["도윤"] += 5
-            slow_print("그는 성실하게 인터뷰에 응해주었다.")
-
-    def meet_taejun(self):
-        print_line()
-        slow_print("불펜에서 가볍게 공을 던지던 태준이 당신을 발견하고는 수건으로 땀을 닦으며 다가온다.")
-        slow_print("그의 사생활에 대한 소문은 익히 들었지만, 눈앞의 그는 완벽한 프로의 모습이다.")
-        slow_print("강태준 (24, 마무리 투수, 185cm)")
-        slow_print("태준: \"처음 뵙네요. 새로 오신 PD님? 카메라 무거워 보이는데, 제가 들어드릴까요?\"")
-        print("\n1. \"괜찮아요! 제 일인걸요. 태준 선수 인터뷰 좀 할 수 있을까요?\"")
-        print("2. (그의 페이스에 말리지 않게 조심하며) \"감사하지만 괜찮습니다. 촬영 바로 갈게요.\"")
-        
-        choice = input("\n선택지를 입력하세요 (1/2): ")
-        if choice == '1':
-            slow_print("\n태준: \"그래요? 그럼 대신 나중에 시원한 커피라도 한 잔 사줄게요. 촬영 시작하죠.\"")
-            self.affection["태준"] += 10
-            slow_print("태준은 부드럽게 웃으며 완벽한 인터뷰 멘트를 뽑아냈다. 프로의 워크에식이 돋보인다. (태준 호감도 상승)")
-        else:
-            slow_print("\n태준: \"흐음... 철벽이시네. 알겠습니다. 예쁘게 찍어주세요, PD님.\"")
-            self.affection["태준"] += 15
-            slow_print("그가 살짝 흥미롭다는 듯한 눈빛으로 당신을 내려다보며 웃었다. 어딘가 쎄한 기분이 든다. (태준 호감도 대폭 상승)")
-
-    def day_2(self):
-        print_line()
-        slow_print("【 DAY 2: 타 구단과의 교류전 】")
-        slow_print("오늘은 타 구단과의 연습 경기가 있는 날. 경기 전 그라운드에서 다른 팀 선수들의 모습도 보인다.")
-        slow_print("인터뷰 스케치를 따러 가야 하는데, 누구를 찍을까?")
-        print("\n1. 상대 팀 슈퍼스타 3루수, 서지훈 (오빠 소리 듣는 걸 좋아함)")
-        print("2. 여자 팬들을 몰고 다니는 마성의 유격수, 한선우")
-        
-        choice = input("\n선택지를 입력하세요 (1/2): ")
-        if choice == '1':
-            self.meet_jihoon()
-        elif choice == '2':
-            self.meet_seonwoo()
-        else:
-            print("잘못된 입력입니다.")
-            self.day_2()
-            return
-            
-        self.check_endings()
-
-    def meet_jihoon(self):
-        print_line()
-        slow_print("서지훈 (24, 타팀 3루수, 183cm)")
-        slow_print("지훈: \"어? 피닉스 새 직원 분이신가 보네. 안녕하세요! 촬영 오셨어요?\"")
-        slow_print("슈퍼스타답게 구김살 없는 밝은 미소로 그가 먼저 인사를 건넨다. 엄청나게 큰 손이 눈에 띈다.")
-        print("\n1. \"안녕하세요, 지훈 선수! 팬이에요. 인터뷰 부탁드려도 될까요?\"")
-        print("2. \"지훈 오빠! 피닉스 유튜브에도 출연 한 번만 해주세요!\"")
-        
-        choice = input("\n선택지를 입력하세요 (1/2): ")
-        if choice == '1':
-            slow_print("\n지훈: \"그럼요! 제가 또 피닉스 유튜브 조회수 좀 올려드려야지.\"")
-            self.affection["지훈"] += 10
-        else:
-            slow_print("\n지훈: \"하하, 오빠요? 피닉스 직원분한테 오빠 소리 들으니까 기분 좋은데요? 당연히 해드려야지.\"")
-            self.affection["지훈"] += 20
-            slow_print("지훈이 환하게 웃으며 당신의 머리 위로 커다란 손을 올려 살짝 쓰다듬는 시늉을 했다. (지훈 호감도 대폭 상승)")
-
-    def meet_seonwoo(self):
-        print_line()
-        slow_print("한선우 (25, 타팀 유격수, 외모 1티어)")
-        slow_print("선우: \"조심하세요. 그쪽으로 공 날아갑니다.\"")
-        slow_print("날아오는 파울 타구를 막아주며 나타난 그는, 왜 여자들이 그에게 미치는지 단번에 알 수 있는 외모였다.")
-        slow_print("선우: \"놀라셨어요? 다친 데는 없고요?\"")
-        print("\n1. \"네, 네... 감사합니다. 선우 선수, 덕분에 살았어요.\" (얼굴을 붉힌다)")
-        print("2. \"감사합니다. 저, 혹시 괜찮으시면 짧게 인터뷰 하나 가능할까요?\" (침착하게 대처한다)")
-        
-        choice = input("\n선택지를 입력하세요 (1/2): ")
-        if choice == '1':
-            slow_print("\n선우: \"다행이네요. 얼굴이 빨개지셨는데, 무리하지 마시고 천천히 촬영하세요.\"")
-            self.affection["선우"] += 15
-            slow_print("그의 다정한 목소리와 꿀 떨어지는 눈빛에 심장이 내려앉는 기분이다. (선우 호감도 상승)")
-        else:
-            slow_print("\n선우: \"방금 공 맞을 뻔했는데 인터뷰부터 챙기시는 거예요? 직업 정신 대단하시네. 좋아요, 합시다.\"")
-            self.affection["선우"] += 20
-            slow_print("그가 다정하게 웃으며 당신과 눈을 맞춘다. 프로다운 모습이 마음에 든 모양이다. (선우 호감도 대폭 상승)")
-
-    def check_endings(self):
-        print_line()
-        slow_print("몇 주간의 치열한 밀당과 업무가 끝난 후...")
-        slow_print("당신의 마음은 누구에게로 향했을까? (임시 엔딩 분기)")
-        
-        # 가장 호감도가 높은 캐릭터 찾기
-        max_affection = max(self.affection.values())
-        best_chars = [char for char, aff in self.affection.items() if aff == max_affection]
-        
-        # 양다리/어장관리 판별 (호감도 15 이상인 캐릭터가 2명 이상일 때)
-        high_affection_count = sum(1 for aff in self.affection.values() if aff >= 15)
-        
-        if high_affection_count >= 2 and self.affection["태준"] >= 15:
-            # 태준이 포함된 어장관리가 들켰을 경우의 얀데레/집착 엔딩
-            self.dark_taejun_ending()
-        elif best_chars[0] == "도윤" and max_affection > 0:
-            slow_print("엔딩: [순둥이 신인 유격수와의 비밀 연애]")
-            slow_print(f"도윤: \"{self.name}아, 나 오늘 홈런 치면... 나한테 장가, 아니, 나랑 사귀어 줄래요?\"")
-        elif best_chars[0] == "지훈" and max_affection > 0:
-            slow_print("엔딩: [슈퍼스타의 유일한 오빠가 되다]")
-            slow_print(f"지훈: \"오빠라고 불러줬을 때부터 내 마음은 정해져 있었어요. 나랑 만나요, {self.name} 씨.\"")
-        elif best_chars[0] == "선우" and max_affection > 0:
-            slow_print("엔딩: [모두의 연인에서 나만의 연인으로]")
-            slow_print(f"선우: \"다른 여자들은 이제 눈에 안 들어옵니다. 내 옆에서 영원히 내 편 해줄래요?\"")
-        elif best_chars[0] == "태준" and max_affection > 0:
-            slow_print("엔딩: [위험하지만 끊을 수 없는 매력]")
-            slow_print(f"태준: \"도망칠 생각은 애초에 하지 마요. 이미 늦었으니까.\"")
-        else:
-            slow_print("엔딩: [솔로가 최고지! (야구와 결혼한 PD)]")
-            slow_print("이 험난한 야구판에서 남자한테 정신 팔릴 시간이 어딨어! 나는 일로 성공한다!")
-            
-        print_line()
-        print("감사합니다. 데모 플레이가 종료되었습니다.")
-
-    def dark_taejun_ending(self):
-        slow_print("【 배드 엔딩 : 그림자 속의 마무리 투수 】")
-        slow_print("당신이 다른 선수들과도 친하게 지낸다는 소문이 퍼졌다.")
-        slow_print("퇴근길, 어두운 주차장에서 누군가 당신의 손목을 낚아챈다. 강태준이다.")
-        slow_print(f"태준: \"{self.name} PD님. 요즘 꽤 바쁘시던데. 이놈 저놈 다 만나주고 다니느라.\"")
-        slow_print("그가 평소의 다정하던 미소를 지운 채, 서늘한 눈빛으로 당신을 벽으로 밀어붙인다.")
-        slow_print("태준: \"내가 분명히 말하지 않았나? 내 구역에 들어온 이상, 다른 놈 쳐다보는 건 안 된다고.\"")
-        slow_print("당신은 그의 집착과 통제에서 쉽게 벗어날 수 없음을 직감했다...")
-
-if __name__ == "__main__":
-    game = Game()
-    game.start()
+</body>
+</html>
